@@ -1,5 +1,5 @@
 # win-screenshot
-Take a screenshot from specified window or whole display on windows platform
+Take a screenshot from specified window or whole display on Windows platform
 
 Example
 ```rust
