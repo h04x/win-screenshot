@@ -2,6 +2,12 @@
 name = "win-screenshot"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Take a screenshot from specified window or whole display on windows platform"
+readme = "README.md"
+repository = "https://github.com/h04x/win-screenshot"
+homepage = "https://github.com/h04x/win-screenshot"
+documentation = "https://docs.rs/win-screenshot"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
