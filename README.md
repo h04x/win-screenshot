@@ -1,7 +1,7 @@
 # win-screenshot
 Take a screenshot from specified window or whole display on Windows platform
 
-Example
+## Examples
 ```rust
 fn main() {
     // capture whole display
