@@ -3,6 +3,8 @@ Take a screenshot from specified window or whole display on Windows platform
 
 ## Examples
 ```rust
+use win_screenshot::*;
+
 fn main() {
     // capture whole display
     capture_display().unwrap().save("screenshot.jpg").unwrap();
