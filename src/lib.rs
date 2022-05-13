@@ -2,19 +2,19 @@
 // https://stackoverflow.com/questions/37132196/multi-monitor-screenshots-only-2-monitors-in-c-with-winapi
 // https://superkogito.github.io/blog/2020/09/28/loop_monitors_details_in_cplusplus.html
 
-use std::ffi::OsString;
 use image::imageops::flip_vertical;
 use image::{ImageBuffer, Rgba};
-use winapi::shared::windef::*;
-use winapi::um::wingdi::*;
-use winapi::um::winuser::*;
-use winapi::um::wingdi::SRCCOPY;
+use std::ffi::OsString;
 use std::mem::size_of;
 use std::os::windows::ffi::OsStrExt;
-use std::ptr::null_mut;
 use std::ptr;
-use winapi::um::winuser::GetSystemMetrics;
+use std::ptr::null_mut;
+use winapi::shared::windef::*;
 use winapi::shared::winerror::ERROR_INVALID_PARAMETER;
+use winapi::um::wingdi::SRCCOPY;
+use winapi::um::wingdi::*;
+use winapi::um::winuser::GetSystemMetrics;
+use winapi::um::winuser::*;
 
 #[derive(Debug)]
 pub enum WSError {
@@ -26,18 +26,24 @@ pub enum WSError {
     PrintWindowIsZero,
     GetDIBitsError,
     GetSystemMetricsIsZero,
-    StretchBltIsZero
+    StretchBltIsZero,
 }
 
 pub type Image = ImageBuffer<Rgba<u8>, Vec<u8>>;
 
 pub fn find_window(window_name: &str) -> Result<usize, ()> {
     unsafe {
-        let w = FindWindowW(ptr::null_mut(), OsString::from(window_name)
-            .encode_wide().chain(Some(0)).collect::<Vec<_>>().as_ptr()) as usize;
+        let w = FindWindowW(
+            ptr::null_mut(),
+            OsString::from(window_name)
+                .encode_wide()
+                .chain(Some(0))
+                .collect::<Vec<_>>()
+                .as_ptr(),
+        ) as usize;
         match w {
             0 => Err(()),
-            p => Ok(p)
+            p => Ok(p),
         }
     }
 }
@@ -182,7 +188,9 @@ pub fn capture_display() -> Result<Image, WSError> {
             return Err(WSError::SelectObjectError);
         }
 
-        let sb = StretchBlt(hdc, 0, 0, width, height, hdc_screen, x, y, width, height, SRCCOPY);
+        let sb = StretchBlt(
+            hdc, 0, 0, width, height, hdc_screen, x, y, width, height, SRCCOPY,
+        );
         if sb == 0 {
             DeleteDC(hdc);
             DeleteObject(hbmp as HGDIOBJ);
@@ -243,4 +251,3 @@ pub fn capture_display() -> Result<Image, WSError> {
         Ok(flip_vertical(&img))
     }
 }
-
