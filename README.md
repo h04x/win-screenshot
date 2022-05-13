@@ -16,8 +16,8 @@ fn main() {
     let window_name = "WindowName";
 
     match find_window(window_name) {
-        Ok(hwnd) => capture_window(hwnd)
-            .unwrap().save("screenshot.jpg").unwrap(),
+        Ok(hwnd) => capture_window(hwnd).unwrap()
+            .save("screenshot.jpg").unwrap(),
         Err(_) => panic!("window {} not found!", window_name)
     }
 }
