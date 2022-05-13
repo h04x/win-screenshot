@@ -1,6 +1,6 @@
 [package]
 name = "win-screenshot"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
 description = "Take a screenshot from specified window or whole display on Windows platform"
@@ -9,8 +9,13 @@ repository = "https://github.com/h04x/win-screenshot"
 homepage = "https://github.com/h04x/win-screenshot"
 documentation = "https://docs.rs/win-screenshot"
 authors = ["h04x <distract.doctrine@gmail.com>"]
+keywords = ["screenshot", "display", "window", "windows"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package.metadata.docs.rs]
+targets = ["x86_64-pc-windows-msvc"]
+
 
 [dependencies]
 image = "0.24"
