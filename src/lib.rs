@@ -59,7 +59,7 @@ pub fn capture_window(hwnd: usize) -> Result<Image, WSError> {
         let rc: LPRECT = &mut rect;
 
         let hdc_screen = GetDC(hwnd as HWND);
-        if hdc_screen == ptr::null_mut() {
+        if hdc_screen.is_null() {
             return Err(WSError::GetDCIsNull);
         }
 
@@ -73,20 +73,20 @@ pub fn capture_window(hwnd: usize) -> Result<Image, WSError> {
         let height = (*rc).bottom - (*rc).top;
 
         let hdc = CreateCompatibleDC(hdc_screen);
-        if hdc == ptr::null_mut() {
+        if hdc.is_null() {
             ReleaseDC(null_mut(), hdc_screen);
             return Err(WSError::CreateCompatibleDCIsNull);
         }
 
         let hbmp = CreateCompatibleBitmap(hdc_screen, width, height);
-        if hbmp == ptr::null_mut() {
+        if hbmp.is_null() {
             DeleteDC(hdc);
             ReleaseDC(null_mut(), hdc_screen);
             return Err(WSError::CreateCompatibleBitmapIsNull);
         }
 
         let so = SelectObject(hdc, hbmp as HGDIOBJ);
-        if so == HGDI_ERROR || so == ptr::null_mut() {
+        if so == HGDI_ERROR || so.is_null() {
             DeleteDC(hdc);
             DeleteObject(hbmp as HGDIOBJ);
             ReleaseDC(null_mut(), hdc_screen);
@@ -138,11 +138,7 @@ pub fn capture_window(hwnd: usize) -> Result<Image, WSError> {
             return Err(WSError::GetDIBitsError);
         }
 
-        buf.chunks_exact_mut(4).for_each(|c| {
-            let t = c[0];
-            c[0] = c[2];
-            c[2] = t;
-        });
+        buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
 
         let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
             ImageBuffer::from_raw(width as u32, height as u32, buf).unwrap();
@@ -158,12 +154,12 @@ pub fn capture_window(hwnd: usize) -> Result<Image, WSError> {
 pub fn capture_display() -> Result<Image, WSError> {
     unsafe {
         let hdc_screen = GetDC(null_mut());
-        if hdc_screen == ptr::null_mut() {
+        if hdc_screen.is_null() {
             return Err(WSError::GetDCIsNull);
         }
 
         let hdc = CreateCompatibleDC(hdc_screen);
-        if hdc == ptr::null_mut() {
+        if hdc.is_null() {
             ReleaseDC(null_mut(), hdc_screen);
             return Err(WSError::CreateCompatibleDCIsNull);
         }
@@ -174,14 +170,14 @@ pub fn capture_display() -> Result<Image, WSError> {
         let height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 
         let hbmp = CreateCompatibleBitmap(hdc_screen, width, height);
-        if hbmp == ptr::null_mut() {
+        if hbmp.is_null() {
             DeleteDC(hdc);
             ReleaseDC(null_mut(), hdc_screen);
             return Err(WSError::CreateCompatibleBitmapIsNull);
         }
 
         let so = SelectObject(hdc, hbmp as HGDIOBJ);
-        if so == HGDI_ERROR || so == ptr::null_mut() {
+        if so == HGDI_ERROR || so.is_null() {
             DeleteDC(hdc);
             DeleteObject(hbmp as HGDIOBJ);
             ReleaseDC(null_mut(), hdc_screen);
@@ -235,11 +231,7 @@ pub fn capture_display() -> Result<Image, WSError> {
             return Err(WSError::GetDIBitsError);
         }
 
-        buf.chunks_exact_mut(4).for_each(|c| {
-            let t = c[0];
-            c[0] = c[2];
-            c[2] = t;
-        });
+        buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
 
         let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
             ImageBuffer::from_raw(width as u32, height as u32, buf).unwrap();
