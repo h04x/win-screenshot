@@ -5,7 +5,7 @@ fn main() {
     capture_display().unwrap().save("screenshot.jpg").unwrap();
 
     // capture window by known id
-    capture_window(132266)
+    capture_window(67584)
         .unwrap()
         .save("screenshot.jpg")
         .unwrap();

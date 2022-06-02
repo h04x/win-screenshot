@@ -63,7 +63,7 @@ pub fn capture_window(hwnd: usize) -> Result<Image, WSError> {
             return Err(WSError::GetDCIsNull);
         }
 
-        let get_cr = GetClientRect(hwnd as HWND, rc);
+        let get_cr = GetWindowRect(hwnd as HWND, rc);
         if get_cr == 0 {
             ReleaseDC(null_mut(), hdc_screen);
             return Err(WSError::GetClientRectIsZero);
