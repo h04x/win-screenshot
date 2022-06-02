@@ -9,7 +9,7 @@ capture_window() cannot correctly capture the hardware accelerated window
 use win_screenshot::*;
 
 fn main() {
-    // capture entire screen
+    // capture whole display
     capture_display().unwrap().save("screenshot.jpg").unwrap();
 
     // capture window by known id
@@ -19,14 +19,9 @@ fn main() {
         .unwrap();
 
     // capture window by Name
-    let window_name = "WindowName";
-
-    match find_window(window_name) {
-        Ok(hwnd) => capture_window(hwnd)
-            .unwrap()
-            .save("screenshot.jpg")
-            .unwrap(),
-        Err(_) => panic!("window {} not found!", window_name),
-    }
+    capture_window(find_window("WindowName").unwrap())
+        .unwrap()
+        .save("screenshot.jpg")
+        .unwrap();
 }
 ```
