@@ -2,7 +2,7 @@
 Take a screenshot from specified window or entire screen on Windows platform
 
 ## Known Issues
-capture_window() cannot correctly capture the hardware accelerated window
+capture_window() draws black border for some windows. 
 
 ## Examples
 ```rust

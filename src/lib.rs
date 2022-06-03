@@ -1,6 +1,7 @@
 // https://stackoverflow.com/questions/7292757/how-to-get-screenshot-of-a-window-as-bitmap-object-in-c
 // https://stackoverflow.com/questions/37132196/multi-monitor-screenshots-only-2-monitors-in-c-with-winapi
 // https://superkogito.github.io/blog/2020/09/28/loop_monitors_details_in_cplusplus.html
+// https://stackoverflow.com/questions/63826570/printwindow-on-rtl-window-results-in-a-mirrored-image-with-pw-renderfullcontent
 
 use image::imageops::flip_vertical;
 use image::{ImageBuffer, Rgba};
@@ -49,6 +50,8 @@ pub fn find_window(window_name: &str) -> Result<usize, ()> {
 }
 
 pub fn capture_window(hwnd: usize) -> Result<Image, WSError> {
+    const PW_RENDERFULLCONTENT: u32 = 2;
+
     unsafe {
         let mut rect = RECT {
             left: 0,
@@ -114,7 +117,7 @@ pub fn capture_window(hwnd: usize) -> Result<Image, WSError> {
 
         let mut buf: Vec<u8> = vec![0; 4 * width as usize * height as usize];
 
-        let pw = PrintWindow(hwnd as HWND, hdc, 0);
+        let pw = PrintWindow(hwnd as HWND, hdc, PW_RENDERFULLCONTENT);
         if pw == 0 {
             DeleteDC(hdc);
             DeleteObject(hbmp as HGDIOBJ);
