@@ -4,6 +4,9 @@ Take a screenshot from specified window or entire screen on Windows platform
 ## Known Issues
 capture_window() draws black border for some windows. 
 
+## Minimum requirements
+capture_window() use undocumented PW_RENDERFULLCONTENT which first appeared in Windows 8.1
+
 ## Examples
 ```rust
 use win_screenshot::*;
