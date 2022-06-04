@@ -1,5 +1,5 @@
 use std::ffi::OsString;
-use std::os::windows::ffi::{OsStrExt};
+use std::os::windows::ffi::OsStrExt;
 use std::ptr;
 use winapi::shared::minwindef::*;
 use winapi::shared::windef::*;
@@ -14,7 +14,7 @@ pub struct HwndName {
 
 #[derive(Debug)]
 pub enum FWError {
-    NotFoundOrFault
+    NotFoundOrFault,
 }
 
 pub fn find_window(window_name: &str) -> Result<usize, FWError> {
@@ -42,7 +42,9 @@ unsafe extern "system" fn wl_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
         return TRUE;
     }
 
-    let name_buf: Vec<u16> = vec![0; (CHAR_LIM + 1) as usize];
+    // as GetWindowTextW return UTF-16 string, which can contain 4 byte per char
+    // allocate buffer ((char_count+1) * 4) bytes, to avoid potentially buf overflow
+    let name_buf: Vec<u16> = vec![0; ((CHAR_LIM + 1) * 2) as usize];
 
     let gwt = GetWindowTextW(hwnd, name_buf.as_ptr() as LPWSTR, CHAR_LIM);
     if gwt == 0 {
@@ -63,7 +65,7 @@ unsafe extern "system" fn wl_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
 
 #[derive(Debug)]
 pub enum WLError {
-    EnumWindowsError
+    EnumWindowsError,
 }
 
 pub fn window_list() -> Result<Vec<HwndName>, WLError> {
