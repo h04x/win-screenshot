@@ -1,6 +1,6 @@
 [package]
 name = "win-screenshot"
-version = "0.1.6"
+version = "1.0.0"
 edition = "2021"
 license = "MIT"
 description = "Take a screenshot from specified window or entire screen on Windows platform"
@@ -20,4 +20,7 @@ targets = ["x86_64-pc-windows-msvc"]
 [dependencies]
 image = "0.24"
 winapi = { version = "0.3", features = ["winuser", "impl-default", "winerror"] }
+
+[dev-dependencies]
+regex = "1"
 
