@@ -24,8 +24,7 @@ fn main() {
         window_list()
             .unwrap()
             .iter()
-            .filter(|i| re.is_match(&i.window_name))
-            .next()
+            .find(|i| re.is_match(&i.window_name))
             .unwrap()
             .hwnd,
     )
