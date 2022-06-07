@@ -7,13 +7,13 @@ fn main() {
     capture_display().unwrap().save("screenshot.jpg").unwrap();
 
     // capture window by known id
-    capture_window(48236694)
+    capture_window(50203948)
         .unwrap()
         .save("screenshot.jpg")
         .unwrap();
 
     // capture window if you know the exact name
-    capture_window(find_window("Notepad").unwrap())
+    capture_window(find_window("BlueStacks").unwrap())
         .unwrap()
         .save("screenshot.jpg")
         .unwrap();

@@ -1,14 +1,14 @@
 use std::ffi::OsString;
 use std::os::windows::ffi::OsStrExt;
-use std::ptr;
-use winapi::shared::minwindef::*;
-use winapi::shared::windef::*;
-use winapi::um::winnt::LPWSTR;
-use winapi::um::winuser::*;
+use windows::core::PCWSTR;
+use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
+use windows::Win32::UI::WindowsAndMessaging::{
+    EnumWindows, FindWindowW, GetWindowTextW, IsWindowVisible,
+};
 
 #[derive(Debug)]
 pub struct HwndName {
-    pub hwnd: usize,
+    pub hwnd: isize,
     pub window_name: String,
 }
 
@@ -17,38 +17,38 @@ pub enum FWError {
     NotFoundOrFault,
 }
 
-pub fn find_window(window_name: &str) -> Result<usize, FWError> {
+pub fn find_window(window_name: &str) -> Result<isize, FWError> {
     unsafe {
         let w = FindWindowW(
-            ptr::null_mut(),
-            OsString::from(window_name)
-                .encode_wide()
-                .chain(Some(0))
-                .collect::<Vec<_>>()
-                .as_ptr(),
-        ) as usize;
+            PCWSTR::default(),
+            PCWSTR(
+                OsString::from(window_name)
+                    .encode_wide()
+                    .chain(Some(0))
+                    .collect::<Vec<_>>()
+                    .as_ptr(),
+            ),
+        );
         match w {
-            0 => Err(FWError::NotFoundOrFault),
-            p => Ok(p),
+            HWND(0) => Err(FWError::NotFoundOrFault),
+            HWND(p) => Ok(p),
         }
     }
 }
 
 unsafe extern "system" fn wl_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
-    let vec = lparam as *mut Vec<HwndName>;
-    const CHAR_LIM: i32 = 128;
+    let vec = lparam.0 as *mut Vec<HwndName>;
+    const CHAR_LIM: usize = 128;
 
-    if IsWindowVisible(hwnd) == FALSE {
-        return TRUE;
+    if IsWindowVisible(hwnd) == BOOL::from(false) {
+        return BOOL::from(true);
     }
 
-    // as GetWindowTextW return UTF-16 string, which can contain 4 byte per char
-    // allocate buffer ((char_count+1) * 4) bytes, to avoid potentially buf overflow
-    let name_buf: Vec<u16> = vec![0; ((CHAR_LIM + 1) * 2) as usize];
+    let mut name_buf: Vec<u16> = vec![0; CHAR_LIM + 1];
 
-    let gwt = GetWindowTextW(hwnd, name_buf.as_ptr() as LPWSTR, CHAR_LIM);
+    let gwt = GetWindowTextW(hwnd, &mut name_buf);
     if gwt == 0 {
-        return TRUE;
+        return BOOL::from(true);
     }
 
     let name = String::from_utf16_lossy(&name_buf)
@@ -56,11 +56,11 @@ unsafe extern "system" fn wl_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
         .to_string();
 
     (*vec).push(HwndName {
-        hwnd: hwnd as usize,
+        hwnd: hwnd.0,
         window_name: name,
     });
 
-    TRUE
+    BOOL::from(true)
 }
 
 #[derive(Debug)]
@@ -73,9 +73,9 @@ pub fn window_list() -> Result<Vec<HwndName>, WLError> {
     unsafe {
         let ew = EnumWindows(
             Some(wl_callback),
-            &mut hwnd_name as *mut Vec<HwndName> as LPARAM,
+            LPARAM(&mut hwnd_name as *mut Vec<HwndName> as isize),
         );
-        if ew == 0 {
+        if ew == BOOL::from(false) {
             return Err(WLError::EnumWindowsError);
         }
     }
