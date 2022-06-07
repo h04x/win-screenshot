@@ -40,7 +40,7 @@ unsafe extern "system" fn wl_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
     let vec = lparam.0 as *mut Vec<HwndName>;
     const CHAR_LIM: usize = 128;
 
-    if IsWindowVisible(hwnd) == BOOL::from(false) {
+    if IsWindowVisible(hwnd) == false {
         return BOOL::from(true);
     }
 
@@ -75,7 +75,7 @@ pub fn window_list() -> Result<Vec<HwndName>, WLError> {
             Some(wl_callback),
             LPARAM(&mut hwnd_name as *mut Vec<HwndName> as isize),
         );
-        if ew == BOOL::from(false) {
+        if ew == false {
             return Err(WLError::EnumWindowsError);
         }
     }

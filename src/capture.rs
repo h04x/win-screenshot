@@ -1,7 +1,7 @@
 use image::imageops::flip_vertical;
 use image::{ImageBuffer, Rgba};
 use std::mem::size_of;
-use windows::Win32::Foundation::{BOOL, ERROR_INVALID_PARAMETER, HWND, RECT};
+use windows::Win32::Foundation::{ERROR_INVALID_PARAMETER, HWND, RECT};
 use windows::Win32::Graphics::Gdi::{
     CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDC, GetDIBits,
     ReleaseDC, SelectObject, StretchBlt, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS,
@@ -32,12 +32,7 @@ pub fn capture_window(hwnd: isize) -> Result<Image, WSError> {
     let hwnd = HWND(hwnd);
 
     unsafe {
-        let mut rect = RECT {
-            left: 0,
-            top: 0,
-            right: 0,
-            bottom: 0,
-        };
+        let mut rect = RECT::default();
 
         let hdc_screen = GetDC(hwnd);
         if hdc_screen.is_invalid() {
@@ -45,7 +40,7 @@ pub fn capture_window(hwnd: isize) -> Result<Image, WSError> {
         }
 
         let get_cr = GetWindowRect(hwnd, &mut rect);
-        if get_cr == BOOL::from(false) {
+        if get_cr == false {
             ReleaseDC(HWND::default(), hdc_screen);
             return Err(WSError::GetClientRectIsZero);
         }
@@ -92,7 +87,7 @@ pub fn capture_window(hwnd: isize) -> Result<Image, WSError> {
         let mut buf: Vec<u8> = vec![0; (4 * width * height) as usize];
 
         let pw = PrintWindow(hwnd, hdc, PRINT_WINDOW_FLAGS(PW_RENDERFULLCONTENT));
-        if pw == BOOL::from(false) {
+        if pw == false {
             DeleteDC(hdc);
             DeleteObject(hbmp);
             ReleaseDC(HWND::default(), hdc_screen);
@@ -164,7 +159,7 @@ pub fn capture_display() -> Result<Image, WSError> {
         let sb = StretchBlt(
             hdc, 0, 0, width, height, hdc_screen, x, y, width, height, SRCCOPY,
         );
-        if sb == BOOL::from(false) {
+        if sb == false {
             DeleteDC(hdc);
             DeleteObject(hbmp);
             ReleaseDC(HWND::default(), hdc_screen);
@@ -186,7 +181,7 @@ pub fn capture_display() -> Result<Image, WSError> {
             ..Default::default()
         };
 
-        let mut buf: Vec<u8> = vec![0; 4 * width as usize * height as usize];
+        let mut buf: Vec<u8> = vec![0; (4 * width * height) as usize];
 
         let gdb = GetDIBits(
             hdc,
