@@ -4,10 +4,10 @@ use win_screenshot::capture::*;
 
 fn main() {
     // capture entire screen
-    capture_display().unwrap().save("screenshot.jpg").unwrap();
+    /*capture_display().unwrap().save("screenshot.jpg").unwrap();
 
     // capture window by known id
-    capture_window(50203948)
+    capture_window(11996706)
         .unwrap()
         .save("screenshot.jpg")
         .unwrap();
@@ -30,5 +30,7 @@ fn main() {
     )
     .unwrap()
     .save("screenshot.jpg")
-    .unwrap();
+    .unwrap();*/
+
+    dbg!(window_list());
 }
