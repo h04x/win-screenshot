@@ -24,7 +24,8 @@ fn main() {
     let s = capture_window(11996706, Area::ClientOnly).unwrap();
 
     // capture window if you know the exact name
-    let s = capture_window(find_window("Notepad").unwrap(), Area::Full).unwrap();
+    let hwnd = find_window("Notepad").unwrap();
+    let s = capture_window(hwnd, Area::Full).unwrap();
 
     // if you don't know the exact name, try to find it
     let re = Regex::new(r"Firefox").unwrap();
