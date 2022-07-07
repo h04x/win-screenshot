@@ -7,10 +7,10 @@ use windows::Win32::Graphics::Gdi::{
     ReleaseDC, SelectObject, StretchBlt, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS,
     SRCCOPY,
 };
-use windows::Win32::Storage::Xps::{PrintWindow, PRINT_WINDOW_FLAGS};
+use windows::Win32::Storage::Xps::{PrintWindow, PRINT_WINDOW_FLAGS, PW_CLIENTONLY};
 use windows::Win32::UI::WindowsAndMessaging::{
-    GetSystemMetrics, GetWindowRect, PW_RENDERFULLCONTENT, SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN,
-    SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN,
+    GetClientRect, GetSystemMetrics, GetWindowRect, PW_RENDERFULLCONTENT, SM_CXVIRTUALSCREEN,
+    SM_CYVIRTUALSCREEN, SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN,
 };
 
 #[derive(Debug)]
@@ -26,9 +26,14 @@ pub enum WSError {
     StretchBltIsZero,
 }
 
+pub enum Area {
+    Full,
+    ClientOnly,
+}
+
 pub type Image = ImageBuffer<Rgba<u8>, Vec<u8>>;
 
-pub fn capture_window(hwnd: isize) -> Result<Image, WSError> {
+pub fn capture_window(hwnd: isize, area: Area) -> Result<Image, WSError> {
     let hwnd = HWND(hwnd);
 
     unsafe {
@@ -39,7 +44,10 @@ pub fn capture_window(hwnd: isize) -> Result<Image, WSError> {
             return Err(WSError::GetDCIsNull);
         }
 
-        let get_cr = GetWindowRect(hwnd, &mut rect);
+        let get_cr = match area {
+            Area::Full => GetWindowRect(hwnd, &mut rect),
+            Area::ClientOnly => GetClientRect(hwnd, &mut rect),
+        };
         if get_cr == false {
             ReleaseDC(HWND::default(), hdc_screen);
             return Err(WSError::GetClientRectIsZero);
@@ -86,7 +94,11 @@ pub fn capture_window(hwnd: isize) -> Result<Image, WSError> {
 
         let mut buf: Vec<u8> = vec![0; (4 * width * height) as usize];
 
-        let pw = PrintWindow(hwnd, hdc, PRINT_WINDOW_FLAGS(PW_RENDERFULLCONTENT));
+        let flags = match area {
+            Area::Full => PRINT_WINDOW_FLAGS(PW_RENDERFULLCONTENT),
+            Area::ClientOnly => PRINT_WINDOW_FLAGS(PW_CLIENTONLY.0 | PW_RENDERFULLCONTENT),
+        };
+        let pw = PrintWindow(hwnd, hdc, flags);
         if pw == false {
             DeleteDC(hdc);
             DeleteObject(hbmp);
