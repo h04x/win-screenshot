@@ -6,7 +6,7 @@ Take a screenshot from specified window or entire screen on Windows platform
 If you call `capture_window()` and got `GetDCIsNull` make sure captured window is not minimized
 
 ## Minimum requirements
-capture_window() uses undocumented PW_RENDERFULLCONTENT which first appeared in Windows 8.1
+`capture_window()` uses undocumented `PW_RENDERFULLCONTENT` which first appeared in Windows 8.1
 
 ## Examples
 ```rust
