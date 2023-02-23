@@ -2,8 +2,8 @@
 Take a screenshot from specified window or entire screen on Windows platform
 
 ## Known Issues
-capture_window() draws black border for some windows  
-If you call capture_window() and got GetDCIsNull make sure captured window is not minimized
+`capture_window()` draws black border for some windows  
+If you call `capture_window()` and got `GetDCIsNull` make sure captured window is not minimized
 
 ## Minimum requirements
 capture_window() uses undocumented PW_RENDERFULLCONTENT which first appeared in Windows 8.1
