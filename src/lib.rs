@@ -3,5 +3,5 @@
 // https://superkogito.github.io/blog/2020/09/28/loop_monitors_details_in_cplusplus.html
 // https://stackoverflow.com/questions/63826570/printwindow-on-rtl-window-results-in-a-mirrored-image-with-pw-renderfullcontent
 
-pub mod addon;
+pub mod utils;
 pub mod capture;
