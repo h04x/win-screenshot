@@ -20,7 +20,7 @@ pub enum FWError {
 pub fn find_window(window_name: &str) -> Result<isize, FWError> {
     unsafe {
         let w = FindWindowW(
-            PCWSTR::default(),
+            PCWSTR::null(),
             PCWSTR(
                 OsString::from(window_name)
                     .encode_wide()

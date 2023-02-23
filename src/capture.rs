@@ -83,7 +83,7 @@ pub fn capture_window(hwnd: isize, area: Area) -> Result<Image, WSError> {
             biBitCount: 32,
             biWidth: width,
             biHeight: height,
-            biCompression: BI_RGB as u32,
+            biCompression: BI_RGB,
             ..Default::default()
         };
 
@@ -111,7 +111,7 @@ pub fn capture_window(hwnd: isize, area: Area) -> Result<Image, WSError> {
             hbmp,
             0,
             height as u32,
-            buf.as_mut_ptr() as *mut core::ffi::c_void,
+            Some(buf.as_mut_ptr() as *mut core::ffi::c_void),
             &mut bmi,
             DIB_RGB_COLORS,
         );
@@ -184,7 +184,7 @@ pub fn capture_display() -> Result<Image, WSError> {
             biBitCount: 32,
             biWidth: width,
             biHeight: height,
-            biCompression: BI_RGB as u32,
+            biCompression: BI_RGB,
             ..Default::default()
         };
 
@@ -200,7 +200,7 @@ pub fn capture_display() -> Result<Image, WSError> {
             hbmp,
             0,
             height as u32,
-            buf.as_mut_ptr() as *mut core::ffi::c_void,
+            Some(buf.as_mut_ptr() as *mut core::ffi::c_void),
             &mut bmi,
             DIB_RGB_COLORS,
         );
