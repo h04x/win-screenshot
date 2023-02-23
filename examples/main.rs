@@ -1,6 +1,5 @@
 use regex::Regex;
-use win_screenshot::addon::*;
-use win_screenshot::capture::*;
+use win_screenshot::prelude::*;
 
 fn main() {
     // capture entire screen
@@ -24,8 +23,7 @@ fn main() {
         .find(|i| re.is_match(&i.window_name))
         .unwrap()
         .hwnd;
-    let s = capture_window(hwnd, Area::Full)
-        .unwrap();
+    let s = capture_window(hwnd, Area::Full).unwrap();
 
     s.save("screenshot.jpg").unwrap();
 }
