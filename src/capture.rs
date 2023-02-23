@@ -1,5 +1,3 @@
-use image::imageops::flip_vertical;
-use image::{ImageBuffer, Rgba};
 use std::mem::size_of;
 use windows::Win32::Foundation::{ERROR_INVALID_PARAMETER, HWND, RECT};
 use windows::Win32::Graphics::Gdi::{
@@ -31,9 +29,13 @@ pub enum Area {
     ClientOnly,
 }
 
-pub type Image = ImageBuffer<Rgba<u8>, Vec<u8>>;
+pub struct RgbaBuf {
+    pub pixels: Vec<u8>,
+    pub width: u32,
+    pub height: u32,
+}
 
-pub fn capture_window(hwnd: isize, area: Area) -> Result<Image, WSError> {
+pub fn capture_window(hwnd: isize, area: Area) -> Result<RgbaBuf, WSError> {
     let hwnd = HWND(hwnd);
 
     unsafe {
@@ -82,7 +84,7 @@ pub fn capture_window(hwnd: isize, area: Area) -> Result<Image, WSError> {
             biPlanes: 1,
             biBitCount: 32,
             biWidth: width,
-            biHeight: height,
+            biHeight: -height,
             biCompression: BI_RGB,
             ..Default::default()
         };
@@ -124,18 +126,19 @@ pub fn capture_window(hwnd: isize, area: Area) -> Result<Image, WSError> {
 
         buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
 
-        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
-            ImageBuffer::from_raw(width as u32, height as u32, buf).unwrap();
-
         DeleteDC(hdc);
         DeleteObject(hbmp);
         ReleaseDC(HWND::default(), hdc_screen);
 
-        Ok(flip_vertical(&img))
+        Ok(RgbaBuf {
+            pixels: buf,
+            width: width as u32,
+            height: height as u32,
+        })
     }
 }
 
-pub fn capture_display() -> Result<Image, WSError> {
+pub fn capture_display() -> Result<RgbaBuf, WSError> {
     unsafe {
         let hdc_screen = GetDC(HWND::default());
         if hdc_screen.is_invalid() {
@@ -183,7 +186,7 @@ pub fn capture_display() -> Result<Image, WSError> {
             biPlanes: 1,
             biBitCount: 32,
             biWidth: width,
-            biHeight: height,
+            biHeight: -height,
             biCompression: BI_RGB,
             ..Default::default()
         };
@@ -213,13 +216,14 @@ pub fn capture_display() -> Result<Image, WSError> {
 
         buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
 
-        let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
-            ImageBuffer::from_raw(width as u32, height as u32, buf).unwrap();
-
         DeleteDC(hdc);
         DeleteObject(hbmp);
         ReleaseDC(HWND::default(), hdc_screen);
 
-        Ok(flip_vertical(&img))
+        Ok(RgbaBuf {
+            pixels: buf,
+            width: width as u32,
+            height: height as u32,
+        })
     }
 }

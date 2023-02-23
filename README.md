@@ -10,23 +10,23 @@ If you call `capture_window()` and got `GetDCIsNull` make sure captured window i
 
 ## Examples
 ```rust
+use image::{ImageBuffer, Rgba};
 use regex::Regex;
-use win_screenshot::addon::*;
-use win_screenshot::capture::*;
+use win_screenshot::prelude::*;
 
 fn main() {
     // capture entire screen
-    let s = capture_display().unwrap();
+    let buf = capture_display().unwrap();
 
     // capture window by known id
-    let s = capture_window(11996706, Area::Full).unwrap();
+    let buf = capture_window(11996706, Area::Full).unwrap();
 
     // capture window client area
-    let s = capture_window(11996706, Area::ClientOnly).unwrap();
+    let buf = capture_window(11996706, Area::ClientOnly).unwrap();
 
     // capture window if you know the exact name
     let hwnd = find_window("Notepad").unwrap();
-    let s = capture_window(hwnd, Area::Full).unwrap();
+    let buf = capture_window(hwnd, Area::Full).unwrap();
 
     // if you don't know the exact name, try to find it
     let re = Regex::new(r"Firefox").unwrap();
@@ -36,10 +36,11 @@ fn main() {
         .find(|i| re.is_match(&i.window_name))
         .unwrap()
         .hwnd;
-    let s = capture_window(hwnd, Area::Full)
-        .unwrap();
+    let buf = capture_window(hwnd, Area::Full).unwrap();
 
-    s.save("screenshot.jpg").unwrap();
+    // convert to image and save
+    let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+        ImageBuffer::from_raw(buf.width, buf.height, buf.pixels).unwrap();
+    img.save("screenshot.jpg").unwrap();
 }
-
 ```
