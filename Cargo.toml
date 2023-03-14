@@ -23,4 +23,11 @@ windows = { version = "0.44", features = ["Win32_UI_WindowsAndMessaging", "Win32
 [dev-dependencies]
 image = "0.24"
 regex = "1"
+criterion = "0.4"
+
+[[bench]]
+name = "capture_window_rect"
+harness = false
+
+
 
