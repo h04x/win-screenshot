@@ -30,5 +30,3 @@ qshot = "0.1"
 name = "capture_window_rect"
 harness = false
 
-
-

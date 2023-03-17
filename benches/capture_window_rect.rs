@@ -19,13 +19,11 @@ fn using_capture_window_ex(hwnd: isize) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     img
 }
 
-fn qshot(hwnd: isize) -> ImageBuffer<Rgb<u8>, &[u8]> {
-    let manager = CaptureManager::new(hwnd, (100, 100), (200, 200)).unwrap();
-    let res = manager.capture().unwrap();
+fn qshot(hwnd: isize) {
+    let cm = CaptureManager::new(hwnd, (100, 100), (200, 200)).unwrap();
+    let res = cm.capture().unwrap();
     let img: ImageBuffer<Rgb<u8>, &[u8]> =
         ImageBuffer::from_raw(200, 200, res.get_bits()).unwrap();
-    img
-    //img.save("screenshot.jpg").unwrap();
 }
 
 pub fn criterion_benchmark(c: &mut Criterion) {
@@ -36,6 +34,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         .find(|i| re.is_match(&i.window_name))
         .unwrap()
         .hwnd;
+    let cm = CaptureManager::new(hwnd, (100, 100), (200, 200)).unwrap();
 
     let mut group = c.benchmark_group("crop");
 
