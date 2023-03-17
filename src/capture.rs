@@ -1,4 +1,5 @@
 use std::mem::size_of;
+use std::time::Instant;
 use windows::Win32::Foundation::{ERROR_INVALID_PARAMETER, HWND, RECT};
 use windows::Win32::Graphics::Gdi::{
     BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDC, GetDIBits,
@@ -31,13 +32,13 @@ pub enum Area {
 }
 
 #[derive(Debug)]
-pub struct RgbaBuf {
+pub struct RgbBuf {
     pub pixels: Vec<u8>,
     pub width: u32,
     pub height: u32,
 }
 
-pub fn capture_window(hwnd: isize, area: Area) -> Result<RgbaBuf, WSError> {
+pub fn capture_window(hwnd: isize, area: Area) -> Result<RgbBuf, WSError> {
     let hwnd = HWND(hwnd);
 
     unsafe {
@@ -84,7 +85,7 @@ pub fn capture_window(hwnd: isize, area: Area) -> Result<RgbaBuf, WSError> {
         let bmih = BITMAPINFOHEADER {
             biSize: size_of::<BITMAPINFOHEADER>() as u32,
             biPlanes: 1,
-            biBitCount: 32,
+            biBitCount: 24,
             biWidth: width,
             biHeight: -height,
             biCompression: BI_RGB,
@@ -126,13 +127,13 @@ pub fn capture_window(hwnd: isize, area: Area) -> Result<RgbaBuf, WSError> {
             return Err(WSError::GetDIBitsError);
         }
 
-        buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
+        buf.chunks_exact_mut(3).for_each(|c| c.swap(0, 2));
 
         DeleteDC(hdc);
         DeleteObject(hbmp);
         ReleaseDC(HWND::default(), hdc_screen);
 
-        Ok(RgbaBuf {
+        Ok(RgbBuf {
             pixels: buf,
             width: width as u32,
             height: height as u32,
@@ -144,7 +145,7 @@ pub fn capture_window_ex(
     hwnd: isize,
     area: Area,
     user_rect: Option<[i32; 4]>,
-) -> Result<RgbaBuf, WSError> {
+) -> Result<RgbBuf, WSError> {
     let hwnd = HWND(hwnd);
 
     //let [x, y, w, h] = rect.unwrap();
@@ -194,6 +195,7 @@ pub fn capture_window_ex(
             Area::Full => PRINT_WINDOW_FLAGS(PW_RENDERFULLCONTENT),
             Area::ClientOnly => PRINT_WINDOW_FLAGS(PW_CLIENTONLY.0 | PW_RENDERFULLCONTENT),
         };
+
         let pw = PrintWindow(hwnd, hdc, flags);
         if pw == false {
             DeleteDC(hdc);
@@ -257,7 +259,7 @@ pub fn capture_window_ex(
         let bmih = BITMAPINFOHEADER {
             biSize: size_of::<BITMAPINFOHEADER>() as u32,
             biPlanes: 1,
-            biBitCount: 32,
+            biBitCount: 24,
             biWidth: w,
             biHeight: -h,
             biCompression: BI_RGB,
@@ -269,7 +271,7 @@ pub fn capture_window_ex(
             ..Default::default()
         };
 
-        let mut buf: Vec<u8> = vec![0; (4 * w * h) as usize];
+        let mut buf: Vec<u8> = vec![0; (3 * w * h) as usize];
 
         let gdb = GetDIBits(
             hdc,
@@ -287,13 +289,13 @@ pub fn capture_window_ex(
             return Err(WSError::GetDIBitsError);
         }
 
-        buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
+        buf.chunks_exact_mut(3).for_each(|c| c.swap(0, 2));
 
         DeleteDC(hdc);
         DeleteObject(hbmp);
         ReleaseDC(HWND::default(), hdc_screen);
 
-        Ok(RgbaBuf {
+        Ok(RgbBuf {
             pixels: buf,
             width: w as u32,
             height: h as u32,
@@ -301,7 +303,7 @@ pub fn capture_window_ex(
     }
 }
 
-pub fn capture_display() -> Result<RgbaBuf, WSError> {
+pub fn capture_display() -> Result<RgbBuf, WSError> {
     unsafe {
         let hdc_screen = GetDC(HWND::default());
         if hdc_screen.is_invalid() {
@@ -347,7 +349,7 @@ pub fn capture_display() -> Result<RgbaBuf, WSError> {
         let bmih = BITMAPINFOHEADER {
             biSize: size_of::<BITMAPINFOHEADER>() as u32,
             biPlanes: 1,
-            biBitCount: 32,
+            biBitCount: 24,
             biWidth: width,
             biHeight: -height,
             biCompression: BI_RGB,
@@ -377,13 +379,13 @@ pub fn capture_display() -> Result<RgbaBuf, WSError> {
             return Err(WSError::GetDIBitsError);
         }
 
-        buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
+        buf.chunks_exact_mut(3).for_each(|c| c.swap(0, 2));
 
         DeleteDC(hdc);
         DeleteObject(hbmp);
         ReleaseDC(HWND::default(), hdc_screen);
 
-        Ok(RgbaBuf {
+        Ok(RgbBuf {
             pixels: buf,
             width: width as u32,
             height: height as u32,

@@ -24,6 +24,7 @@ windows = { version = "0.44", features = ["Win32_UI_WindowsAndMessaging", "Win32
 image = "0.24"
 regex = "1"
 criterion = "0.4"
+qshot = "0.1"
 
 [[bench]]
 name = "capture_window_rect"
