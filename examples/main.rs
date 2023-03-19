@@ -26,13 +26,11 @@ fn main() {
     // Screenshot client area of window
     let area = Area::ClientOnly;
     // Build-in crop, faster on large window
-    let crop = Some([100, 100, 200, 200]);
+    let crop = Some([100, 100, 300, 300]);
     let buf = capture_window_ex(hwnd, area, crop).unwrap();
-
 
     // convert to image and save
     let img: ImageBuffer<Rgb<u8>, Vec<u8>> =
         ImageBuffer::from_raw(buf.width, buf.height, buf.pixels).unwrap();
     img.save("screenshot.jpg").unwrap();
-
 }

@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use image::{imageops::crop_imm, ImageBuffer, Rgba, Rgb};
+use image::{imageops::crop_imm, ImageBuffer, Rgb, Rgba};
 use qshot::CaptureManager;
 use regex::Regex;
 use win_screenshot::prelude::*;
@@ -22,8 +22,7 @@ fn using_capture_window_ex(hwnd: isize) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
 fn qshot(hwnd: isize) {
     let cm = CaptureManager::new(hwnd, (100, 100), (200, 200)).unwrap();
     let res = cm.capture().unwrap();
-    let img: ImageBuffer<Rgb<u8>, &[u8]> =
-        ImageBuffer::from_raw(200, 200, res.get_bits()).unwrap();
+    let img: ImageBuffer<Rgb<u8>, &[u8]> = ImageBuffer::from_raw(200, 200, res.get_bits()).unwrap();
 }
 
 pub fn criterion_benchmark(c: &mut Criterion) {
@@ -44,9 +43,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     group.bench_function("using_capture_window_ex", |b| {
         b.iter(|| using_capture_window_ex(black_box(hwnd)))
     });
-    group.bench_function("qshot", |b| {
-        b.iter(|| qshot(black_box(hwnd)))
-    });
+    group.bench_function("qshot", |b| b.iter(|| qshot(black_box(hwnd))));
     group.finish();
 }
 
