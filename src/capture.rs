@@ -1,7 +1,7 @@
 use std::mem::size_of;
 use std::time::Instant;
 use windows::core::HRESULT;
-use windows::Win32::Foundation::{ERROR_INVALID_PARAMETER, HWND, RECT};
+use windows::Win32::Foundation::{ERROR_INVALID_PARAMETER, E_FAIL, HWND, RECT};
 use windows::Win32::Graphics::Gdi::{
     BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDC, GetDIBits,
     ReleaseDC, SelectObject, StretchBlt, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HDC,
@@ -60,7 +60,6 @@ pub fn capture_window_ex(
             Area::Full => Rect::get_window_rect(hwnd),
             Area::ClientOnly => Rect::get_client_rect(hwnd),
         }?;
-        dbg!(&rect);
 
         let hdc = CreatedHdc::create_compatible_dc(hdc_screen.hdc)?;
         let hbmp = Hbitmap::create_compatible_bitmap(hdc_screen.hdc, rect.width, rect.height)?;
@@ -68,17 +67,17 @@ pub fn capture_window_ex(
             return Err(windows::core::Error::from_win32());
         }
 
-        let flags = match area {
-            Area::Full => PRINT_WINDOW_FLAGS(PW_RENDERFULLCONTENT),
-            Area::ClientOnly => PRINT_WINDOW_FLAGS(PW_CLIENTONLY.0 | PW_RENDERFULLCONTENT),
-        };
+        let flags = PRINT_WINDOW_FLAGS(match area {
+            Area::Full => PW_RENDERFULLCONTENT,
+            Area::ClientOnly => PW_CLIENTONLY.0 | PW_RENDERFULLCONTENT,
+        });
         if PrintWindow(hwnd, hdc.hdc, flags) == false {
             return Err(windows::core::Error::from_win32());
         }
 
         let (w, h, hdc, hbmp) = if crop_xy.is_some() || crop_wh.is_some() {
-            let [x, y] = crop_xy.unwrap_or([0,0]);
-            let [w, h] = crop_xy.unwrap_or([rect.width - x, rect.height - y]);
+            let [x, y] = crop_xy.unwrap_or([0, 0]);
+            let [w, h] = crop_wh.unwrap_or([rect.width - x, rect.height - y]);
             let hdc2 = CreatedHdc::create_compatible_dc(hdc.hdc)?;
             let hbmp2 = Hbitmap::create_compatible_bitmap(hdc.hdc, w, h)?;
             let so = SelectObject(hdc2.hdc, hbmp2.hbitmap);
@@ -96,30 +95,10 @@ pub fn capture_window_ex(
             (rect.width, rect.height, hdc, hbmp)
         };
 
-        /*let (w, h, hdc, hbmp) = match (crop_xy, crop_wh) {
-            (xy, wh) => {
-                let [x, y, w, h] = crop;
-                //CreateCompatibleDC(Hbitmap::from(hdc.hdc));
-                let hdc2 = CreatedHdc::create_compatible_dc(hdc.hdc)?;
-                let hbmp2 = Hbitmap::create_compatible_bitmap(hdc.hdc, w, h)?;
-                let so = SelectObject(hdc2.hdc, hbmp2.hbitmap);
-                if so.is_invalid() {
-                    return Err(windows::core::Error::from_win32());
-                }
-                if BitBlt(hdc2.hdc, 0, 0, w, h, hdc.hdc, x, y, SRCCOPY) == false {
-                    return Err(windows::core::Error::from_win32());
-                }
-                if SelectObject(hdc2.hdc, so).is_invalid() {
-                    return Err(windows::core::Error::from_win32());
-                }
-                (w, h, hdc2, hbmp2)
-            }
-            None => (rect.width, rect.height, hdc, hbmp),
-        };*/
         let bmih = BITMAPINFOHEADER {
             biSize: size_of::<BITMAPINFOHEADER>() as u32,
             biPlanes: 1,
-            biBitCount: 24,
+            biBitCount: 32,
             biWidth: w,
             biHeight: -h,
             biCompression: BI_RGB,
@@ -129,7 +108,7 @@ pub fn capture_window_ex(
             bmiHeader: bmih,
             ..Default::default()
         };
-        let mut buf: Vec<u8> = vec![0; (3 * w * h) as usize];
+        let mut buf: Vec<u8> = vec![0; (4 * w * h) as usize];
         let gdb = GetDIBits(
             hdc.hdc,
             hbmp.hbitmap,
@@ -140,12 +119,9 @@ pub fn capture_window_ex(
             DIB_RGB_COLORS,
         );
         if gdb == 0 || gdb == ERROR_INVALID_PARAMETER.0 as i32 {
-            return Err(windows::core::Error::new(
-                HRESULT(555),
-                "GetDIBits error".into(),
-            ));
+            return Err(windows::core::Error::new(E_FAIL, "GetDIBits error".into()));
         }
-        buf.chunks_exact_mut(3).for_each(|c| c.swap(0, 2));
+        buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
         Ok(RgbBuf {
             pixels: buf,
             width: w as u32,
