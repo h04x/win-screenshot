@@ -1,11 +1,13 @@
+use std::borrow::Borrow;
+
 use windows::{
-    core::Error,
+    core::{Error, IntoParam},
     Win32::{
         Foundation::{HWND, RECT},
         Graphics::Gdi::{
-            BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDC,
-            GetDIBits, ReleaseDC, SelectObject, StretchBlt, BITMAPINFO, BITMAPINFOHEADER, BI_RGB,
-            DIB_RGB_COLORS, HDC, SRCCOPY, CreatedHDC, HBITMAP,
+            BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, CreatedHDC, DeleteDC, DeleteObject,
+            GetDC, GetDIBits, ReleaseDC, SelectObject, StretchBlt, BITMAPINFO, BITMAPINFOHEADER,
+            BI_RGB, DIB_RGB_COLORS, HBITMAP, HDC, SRCCOPY,
         },
         UI::WindowsAndMessaging::{GetClientRect, GetWindowRect},
     },
@@ -22,7 +24,7 @@ impl Hdc {
         P0: Into<HWND>,
     {
         unsafe {
-            return match GetDC(hwnd) {
+            return match GetDC(hwnd.into()) {
                 e if e.is_invalid() => Err(Error::from_win32()),
                 hdc => Ok(Hdc { hdc }),
             };
@@ -38,12 +40,19 @@ impl Drop for Hdc {
     }
 }
 
+impl From<&Hdc> for HDC {
+    fn from(item: &Hdc) -> Self {
+        item.hdc
+    }
+}
+
 impl From<Hdc> for HDC {
     fn from(item: Hdc) -> Self {
         item.hdc
     }
 }
 
+#[derive(Debug)]
 pub(crate) struct Rect {
     //pub(crate) rect: RECT,
     pub(crate) left: i32,
@@ -61,7 +70,7 @@ impl Rect {
     {
         let mut rect = RECT::default();
         unsafe {
-            return match GetWindowRect(hwnd, &mut rect).as_bool() {
+            return match GetWindowRect(hwnd.into(), &mut rect).as_bool() {
                 true => Ok(Rect {
                     left: rect.left,
                     top: rect.top,
@@ -80,7 +89,7 @@ impl Rect {
     {
         let mut rect = RECT::default();
         unsafe {
-            return match GetClientRect(hwnd, &mut rect).as_bool() {
+            return match GetClientRect(hwnd.into(), &mut rect).as_bool() {
                 true => Ok(Rect {
                     left: rect.left,
                     top: rect.top,
@@ -102,15 +111,26 @@ pub(crate) struct CreatedHdc {
 impl CreatedHdc {
     pub(crate) fn create_compatible_dc<P0>(hdc: P0) -> Result<CreatedHdc, Error>
     where
-        P0: Into<HDC>
+        P0: IntoParam<HDC>,
     {
         unsafe {
-            return match CreateCompatibleDC(hdc.into()) {
+            return match CreateCompatibleDC(hdc) {
                 e if e.is_invalid() => Err(Error::from_win32()),
                 hdc => Ok(CreatedHdc { hdc }),
-
             };
         }
+    }
+}
+
+impl From<&CreatedHdc> for HDC {
+    fn from(item: &CreatedHdc) -> Self {
+        HDC(item.hdc.0)
+    }
+}
+
+impl From<CreatedHdc> for HDC {
+    fn from(item: CreatedHdc) -> Self {
+        HDC(item.hdc.0)
     }
 }
 
@@ -129,10 +149,10 @@ pub(crate) struct Hbitmap {
 impl Hbitmap {
     pub(crate) fn create_compatible_bitmap<P0>(hdc: P0, w: i32, h: i32) -> Result<Hbitmap, Error>
     where
-        P0: Into<HDC>
+        P0: IntoParam<HDC>,
     {
         unsafe {
-            return match CreateCompatibleBitmap(hdc.into(), w, h) {
+            return match CreateCompatibleBitmap(hdc, w, h) {
                 e if e.is_invalid() => Err(Error::from_win32()),
                 hbitmap => Ok(Hbitmap { hbitmap }),
             };

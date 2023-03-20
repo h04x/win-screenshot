@@ -18,7 +18,7 @@ targets = ["x86_64-pc-windows-msvc"]
 
 
 [dependencies]
-windows = { version = "0.44", features = ["Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Storage_Xps"] }
+windows = { version = "0.46", features = ["Win32_UI_WindowsAndMessaging", "Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Storage_Xps"] }
 
 [dev-dependencies]
 image = "0.24"

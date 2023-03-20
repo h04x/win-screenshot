@@ -1,5 +1,6 @@
 use std::mem::size_of;
 use std::time::Instant;
+use windows::core::HRESULT;
 use windows::Win32::Foundation::{ERROR_INVALID_PARAMETER, HWND, RECT};
 use windows::Win32::Graphics::Gdi::{
     BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDC, GetDIBits,
@@ -11,9 +12,8 @@ use windows::Win32::UI::WindowsAndMessaging::{
     GetClientRect, GetSystemMetrics, GetWindowRect, PW_RENDERFULLCONTENT, SM_CXVIRTUALSCREEN,
     SM_CYVIRTUALSCREEN, SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN,
 };
-use windows::core::HRESULT;
 
-use crate::wrappers::{Hdc, Rect, CreatedHdc, Hbitmap};
+use crate::wrappers::{CreatedHdc, Hbitmap, Hdc, Rect};
 
 #[derive(Debug)]
 pub enum WSError {
@@ -42,13 +42,14 @@ pub struct RgbBuf {
 }
 
 pub fn capture_window(hwnd: isize) -> Result<RgbBuf, windows::core::Error> {
-    capture_window_ex(hwnd, Area::Full, None)
+    capture_window_ex(hwnd, Area::Full, None, None)
 }
 
 pub fn capture_window_ex(
     hwnd: isize,
     area: Area,
-    crop: Option<[i32; 4]>,
+    crop_xy: Option<[i32; 2]>,
+    crop_wh: Option<[i32; 2]>,
 ) -> Result<RgbBuf, windows::core::Error> {
     let hwnd = HWND(hwnd);
 
@@ -59,6 +60,7 @@ pub fn capture_window_ex(
             Area::Full => Rect::get_window_rect(hwnd),
             Area::ClientOnly => Rect::get_client_rect(hwnd),
         }?;
+        dbg!(&rect);
 
         let hdc = CreatedHdc::create_compatible_dc(hdc_screen.hdc)?;
         let hbmp = Hbitmap::create_compatible_bitmap(hdc_screen.hdc, rect.width, rect.height)?;
@@ -73,10 +75,31 @@ pub fn capture_window_ex(
         if PrintWindow(hwnd, hdc.hdc, flags) == false {
             return Err(windows::core::Error::from_win32());
         }
-        
-        let (w, h, hdc, hbmp) = match crop {
-            Some(crop) => {
+
+        let (w, h, hdc, hbmp) = if crop_xy.is_some() || crop_wh.is_some() {
+            let [x, y] = crop_xy.unwrap_or([0,0]);
+            let [w, h] = crop_xy.unwrap_or([rect.width - x, rect.height - y]);
+            let hdc2 = CreatedHdc::create_compatible_dc(hdc.hdc)?;
+            let hbmp2 = Hbitmap::create_compatible_bitmap(hdc.hdc, w, h)?;
+            let so = SelectObject(hdc2.hdc, hbmp2.hbitmap);
+            if so.is_invalid() {
+                return Err(windows::core::Error::from_win32());
+            }
+            if BitBlt(hdc2.hdc, 0, 0, w, h, hdc.hdc, x, y, SRCCOPY) == false {
+                return Err(windows::core::Error::from_win32());
+            }
+            if SelectObject(hdc2.hdc, so).is_invalid() {
+                return Err(windows::core::Error::from_win32());
+            }
+            (w, h, hdc2, hbmp2)
+        } else {
+            (rect.width, rect.height, hdc, hbmp)
+        };
+
+        /*let (w, h, hdc, hbmp) = match (crop_xy, crop_wh) {
+            (xy, wh) => {
                 let [x, y, w, h] = crop;
+                //CreateCompatibleDC(Hbitmap::from(hdc.hdc));
                 let hdc2 = CreatedHdc::create_compatible_dc(hdc.hdc)?;
                 let hbmp2 = Hbitmap::create_compatible_bitmap(hdc.hdc, w, h)?;
                 let so = SelectObject(hdc2.hdc, hbmp2.hbitmap);
@@ -92,7 +115,7 @@ pub fn capture_window_ex(
                 (w, h, hdc2, hbmp2)
             }
             None => (rect.width, rect.height, hdc, hbmp),
-        };
+        };*/
         let bmih = BITMAPINFOHEADER {
             biSize: size_of::<BITMAPINFOHEADER>() as u32,
             biPlanes: 1,
@@ -117,7 +140,10 @@ pub fn capture_window_ex(
             DIB_RGB_COLORS,
         );
         if gdb == 0 || gdb == ERROR_INVALID_PARAMETER.0 as i32 {
-            return Err(windows::core::Error::new(HRESULT(555), "GetDIBits error".into()));
+            return Err(windows::core::Error::new(
+                HRESULT(555),
+                "GetDIBits error".into(),
+            ));
         }
         buf.chunks_exact_mut(3).for_each(|c| c.swap(0, 2));
         Ok(RgbBuf {

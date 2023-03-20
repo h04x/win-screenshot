@@ -4,9 +4,9 @@ use qshot::CaptureManager;
 use regex::Regex;
 use win_screenshot::prelude::*;
 
-fn using_image_crate(hwnd: isize) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
-    let buf = capture_window(hwnd, Area::Full).unwrap();
-    let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
+fn using_image_crate(hwnd: isize) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    let buf = capture_window(hwnd).unwrap();
+    let img: ImageBuffer<Rgb<u8>, Vec<u8>> =
         ImageBuffer::from_raw(buf.width, buf.height, buf.pixels).unwrap();
     let img = crop_imm(&img, 100, 100, 200, 200).to_image();
     img
