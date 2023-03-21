@@ -1,4 +1,4 @@
-use image::{ImageBuffer, Rgb};
+use image::{ImageBuffer, Rgba};
 use regex::Regex;
 use win_screenshot::prelude::*;
 
@@ -14,7 +14,7 @@ fn main() {
     //let buf = capture_window(hwnd).unwrap();
 
     // If you don't know the exact name, try to find it
-    let re = Regex::new(r"Firefox").unwrap();
+    let re = Regex::new(r"Sublime").unwrap();
     let hwnd = window_list()
         .unwrap()
         .iter()
@@ -22,16 +22,18 @@ fn main() {
         .unwrap()
         .hwnd;
 
+
     // More complex func
+    let using = Using::BitBlt;
     // Screenshot client area of window
     let area = Area::Full;
-    // Build-in crop, faster on large window
+    // Build-in crop, faster on large windows
     let crop_xy = None;//Some([100, 100]);
-    let crop_wh = None;//Some([200, 200]);
-    let buf = capture_window_ex(hwnd, area, crop_xy, crop_wh).unwrap();
+    let crop_wh = None; //Some([300 ,300 ]);
+    let buf = capture_window_ex(hwnd, using, area, crop_xy, crop_wh).unwrap();
 
     // convert to image and save
-    let img: ImageBuffer<Rgb<u8>, Vec<u8>> =
+    let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
         ImageBuffer::from_raw(buf.width, buf.height, buf.pixels).unwrap();
     img.save("screenshot.jpg").unwrap();
 }

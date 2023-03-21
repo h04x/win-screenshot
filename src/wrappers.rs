@@ -1,13 +1,10 @@
-use std::borrow::Borrow;
-
 use windows::{
     core::{Error, IntoParam},
     Win32::{
         Foundation::{HWND, RECT},
         Graphics::Gdi::{
-            BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, CreatedHDC, DeleteDC, DeleteObject,
-            GetDC, GetDIBits, ReleaseDC, SelectObject, StretchBlt, BITMAPINFO, BITMAPINFOHEADER,
-            BI_RGB, DIB_RGB_COLORS, HBITMAP, HDC, SRCCOPY,
+            CreateCompatibleBitmap, CreateCompatibleDC, CreatedHDC, DeleteDC, DeleteObject, GetDC,
+            ReleaseDC, HBITMAP, HDC,
         },
         UI::WindowsAndMessaging::{GetClientRect, GetWindowRect},
     },
@@ -24,10 +21,10 @@ impl Hdc {
         P0: Into<HWND>,
     {
         unsafe {
-            return match GetDC(hwnd.into()) {
+            match GetDC(hwnd.into()) {
                 e if e.is_invalid() => Err(Error::from_win32()),
                 hdc => Ok(Hdc { hdc }),
-            };
+            }
         }
     }
 }
@@ -52,6 +49,7 @@ impl From<Hdc> for HDC {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub(crate) struct Rect {
     //pub(crate) rect: RECT,
@@ -70,7 +68,7 @@ impl Rect {
     {
         let mut rect = RECT::default();
         unsafe {
-            return match GetWindowRect(hwnd.into(), &mut rect).as_bool() {
+            match GetWindowRect(hwnd.into(), &mut rect).as_bool() {
                 true => Ok(Rect {
                     left: rect.left,
                     top: rect.top,
@@ -80,7 +78,7 @@ impl Rect {
                     height: rect.bottom - rect.top,
                 }),
                 false => Err(Error::from_win32()),
-            };
+            }
         }
     }
     pub(crate) fn get_client_rect<P0>(hwnd: P0) -> Result<Rect, Error>
@@ -89,7 +87,7 @@ impl Rect {
     {
         let mut rect = RECT::default();
         unsafe {
-            return match GetClientRect(hwnd.into(), &mut rect).as_bool() {
+            match GetClientRect(hwnd.into(), &mut rect).as_bool() {
                 true => Ok(Rect {
                     left: rect.left,
                     top: rect.top,
@@ -99,7 +97,7 @@ impl Rect {
                     height: rect.bottom - rect.top,
                 }),
                 false => Err(Error::from_win32()),
-            };
+            }
         }
     }
 }
@@ -114,10 +112,10 @@ impl CreatedHdc {
         P0: IntoParam<HDC>,
     {
         unsafe {
-            return match CreateCompatibleDC(hdc) {
+            match CreateCompatibleDC(hdc) {
                 e if e.is_invalid() => Err(Error::from_win32()),
                 hdc => Ok(CreatedHdc { hdc }),
-            };
+            }
         }
     }
 }
@@ -152,10 +150,10 @@ impl Hbitmap {
         P0: IntoParam<HDC>,
     {
         unsafe {
-            return match CreateCompatibleBitmap(hdc, w, h) {
+            match CreateCompatibleBitmap(hdc, w, h) {
                 e if e.is_invalid() => Err(Error::from_win32()),
                 hbitmap => Ok(Hbitmap { hbitmap }),
-            };
+            }
         }
     }
 }

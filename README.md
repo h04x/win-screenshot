@@ -1,5 +1,5 @@
 # win-screenshot
-Take a screenshot from specified window or entire screen on Windows platform
+Take a screenshot of a specific window or entire screen on Windows platform
 
 ## Known Issues
 `capture_window()` draws black border for some windows  

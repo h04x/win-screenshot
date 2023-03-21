@@ -1,16 +1,14 @@
 use std::mem::size_of;
-use std::time::Instant;
-use windows::core::HRESULT;
-use windows::Win32::Foundation::{ERROR_INVALID_PARAMETER, E_FAIL, HWND, RECT};
+use windows::Win32::Foundation::{ERROR_INVALID_PARAMETER, E_FAIL, HWND};
 use windows::Win32::Graphics::Gdi::{
     BitBlt, CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDC, GetDIBits,
-    ReleaseDC, SelectObject, StretchBlt, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS, HDC,
+    ReleaseDC, SelectObject, StretchBlt, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS,
     SRCCOPY,
 };
 use windows::Win32::Storage::Xps::{PrintWindow, PRINT_WINDOW_FLAGS, PW_CLIENTONLY};
 use windows::Win32::UI::WindowsAndMessaging::{
-    GetClientRect, GetSystemMetrics, GetWindowRect, PW_RENDERFULLCONTENT, SM_CXVIRTUALSCREEN,
-    SM_CYVIRTUALSCREEN, SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN,
+    GetSystemMetrics, PW_RENDERFULLCONTENT, SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN,
+    SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN,
 };
 
 use crate::wrappers::{CreatedHdc, Hbitmap, Hdc, Rect};
@@ -34,6 +32,11 @@ pub enum Area {
     ClientOnly,
 }
 
+pub enum Using {
+    BitBlt,
+    PrintWindow
+}
+
 #[derive(Debug)]
 pub struct RgbBuf {
     pub pixels: Vec<u8>,
@@ -42,11 +45,12 @@ pub struct RgbBuf {
 }
 
 pub fn capture_window(hwnd: isize) -> Result<RgbBuf, windows::core::Error> {
-    capture_window_ex(hwnd, Area::Full, None, None)
+    capture_window_ex(hwnd, Using::PrintWindow, Area::Full, None, None)
 }
 
 pub fn capture_window_ex(
     hwnd: isize,
+    using: Using,
     area: Area,
     crop_xy: Option<[i32; 2]>,
     crop_wh: Option<[i32; 2]>,
@@ -71,7 +75,11 @@ pub fn capture_window_ex(
             Area::Full => PW_RENDERFULLCONTENT,
             Area::ClientOnly => PW_CLIENTONLY.0 | PW_RENDERFULLCONTENT,
         });
-        if PrintWindow(hwnd, hdc.hdc, flags) == false {
+        dbg!(&rect);
+        /*if PrintWindow(hwnd, hdc.hdc, flags) == false {
+            return Err(windows::core::Error::from_win32());
+        }*/
+        if BitBlt(hdc.hdc, 0, 0, rect.width, rect.height, hdc_screen.hdc, rect.left, rect.top, SRCCOPY) == false {
             return Err(windows::core::Error::from_win32());
         }
 

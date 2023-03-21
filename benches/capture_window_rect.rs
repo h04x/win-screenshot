@@ -13,7 +13,7 @@ fn using_image_crate(hwnd: isize) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
 }
 
 fn using_capture_window_ex(hwnd: isize) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
-    let buf = capture_window_ex(hwnd, Area::Full, Some([100, 100, 200, 200])).unwrap();
+    let buf = capture_window_ex(hwnd, Area::Full, Some([100, 100]), Some([200, 200])).unwrap();
     let img: ImageBuffer<Rgb<u8>, Vec<u8>> =
         ImageBuffer::from_raw(buf.width, buf.height, buf.pixels).unwrap();
     img
