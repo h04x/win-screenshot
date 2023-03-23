@@ -41,7 +41,7 @@ pub enum Using {
 
 #[derive(Debug)]
 pub struct RgbBuf {
-    pub pixels: Vec<u8>,
+    pub pixels: Vec<u8>, 
     pub width: u32,
     pub height: u32,
 }
