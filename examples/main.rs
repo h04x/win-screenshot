@@ -1,4 +1,4 @@
-use image::{ImageBuffer, Rgba};
+use image::RgbaImage;
 use regex::Regex;
 use win_screenshot::prelude::*;
 
@@ -14,7 +14,7 @@ fn main() {
     //let buf = capture_window(hwnd).unwrap();
 
     // If you don't know the exact name, try to find it
-    let re = Regex::new(r"Sublime").unwrap();
+    let re = Regex::new(r"App Player").unwrap();
     let hwnd = window_list()
         .unwrap()
         .iter()
@@ -23,16 +23,15 @@ fn main() {
         .hwnd;
 
     // More complex func
-    let using = Using::BitBlt;
+    let using = Using::PrintWindow;
     // Screenshot client area of window
-    let area = Area::Full;
+    let area = Area::ClientOnly;
     // Build-in crop, faster on large windows
     let crop_xy = None; //Some([100, 100]);
-    let crop_wh = Some([300, 300]);
+    let crop_wh = None; //Some([300, 300]);
     let buf = capture_window_ex(hwnd, using, area, crop_xy, crop_wh).unwrap();
 
     // convert to image and save
-    let img: ImageBuffer<Rgba<u8>, Vec<u8>> =
-        ImageBuffer::from_raw(buf.width, buf.height, buf.pixels).unwrap();
+    let img = RgbaImage::from_raw(buf.width, buf.height, buf.pixels).unwrap();
     img.save("screenshot.jpg").unwrap();
 }

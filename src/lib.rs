@@ -7,5 +7,7 @@
 
 pub mod capture;
 pub mod prelude;
+#[cfg(test)]
+mod tests;
 pub mod utils;
 mod wrappers;

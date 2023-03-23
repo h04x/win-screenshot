@@ -3,7 +3,7 @@ Take a screenshot of a specific window or entire screen on Windows platform
 
 ## Known Issues
 `capture_window()` draws black border for some windows  
-If you call `capture_window()` and got `GetDCIsNull` make sure captured window is not minimized
+If you call `capture_window()` and got `0x80070578 "invalid window handle"` make sure captured window is not minimized
 
 ## Minimum requirements
 `capture_window()` uses undocumented `PW_RENDERFULLCONTENT` which first appeared in Windows 8.1
@@ -19,10 +19,7 @@ fn main() {
     let buf = capture_display().unwrap();
 
     // capture window by known id
-    let buf = capture_window(11996706, Area::Full).unwrap();
-
-    // capture window client area
-    let buf = capture_window(11996706, Area::ClientOnly).unwrap();
+    let buf = capture_window(11996706).unwrap();
 
     // capture window if you know the exact name
     let hwnd = find_window("Notepad").unwrap();
