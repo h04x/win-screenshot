@@ -28,8 +28,9 @@ fn main() {
     img.save("screenshot.jpg").unwrap();
 
 
-    // Function with fine tuning
-    // Dramatically fast, often fails (e.g. firefox, steam, 3d accelerated windows)
+    // Fine tuning
+    // Dramatically faster, often fails
+    // (e.g. firefox, steam, 3d accelerated windows)
     let using = Using::BitBlt;
     // Much slower, much more reliable
     let using = Using::PrintWindow;
@@ -43,6 +44,4 @@ fn main() {
     let crop_xy = None; //Some([100, 100]);
     let crop_wh = None; //Some([300, 300]);
     let buf = capture_window_ex(hwnd, using, area, crop_xy, crop_wh).unwrap();
-
-
 }

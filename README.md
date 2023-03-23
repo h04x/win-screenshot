@@ -28,11 +28,11 @@ fn main() {
     // If you don't know the exact name, try to find it
     let re = Regex::new(r"Steam").unwrap();
     let hwnd = window_list()
-    .unwrap()
-    .iter()
-    .find(|i| re.is_match(&i.window_name))
-    .unwrap()
-    .hwnd;
+        .unwrap()
+        .iter()
+        .find(|i| re.is_match(&i.window_name))
+        .unwrap()
+        .hwnd;
     let buf = capture_window(hwnd).unwrap();
 
     // convert to image and save
@@ -40,8 +40,9 @@ fn main() {
     img.save("screenshot.jpg").unwrap();
 
 
-    // Function with fine tuning
-    // Dramatically fast, often fails (e.g. firefox, steam, 3d accelerated windows)
+    // Fine tuning
+    // Dramatically faster, often fails
+    // (e.g. firefox, steam, 3d accelerated windows)
     let using = Using::BitBlt;
     // Much slower, much more reliable
     let using = Using::PrintWindow;
