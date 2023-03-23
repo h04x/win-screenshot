@@ -27,14 +27,16 @@ pub enum WSError {
     BitBltError,
 }
 
+#[derive(Clone, Copy)]
 pub enum Area {
     Full,
     ClientOnly,
 }
 
+#[derive(PartialEq, Clone, Copy)]
 pub enum Using {
     BitBlt,
-    PrintWindow
+    PrintWindow,
 }
 
 #[derive(Debug)]
@@ -60,13 +62,26 @@ pub fn capture_window_ex(
     unsafe {
         let hdc_screen = Hdc::get_dc(hwnd)?;
 
-        let rect = match area {
-            Area::Full => Rect::get_window_rect(hwnd),
-            Area::ClientOnly => Rect::get_client_rect(hwnd),
+        // BitBlt support only ClientOnly
+        let rect = match (using, area) {
+            (Using::PrintWindow, Area::Full) => Rect::get_window_rect(hwnd),
+            (Using::BitBlt, _) | (Using::PrintWindow, Area::ClientOnly) => {
+                Rect::get_client_rect(hwnd)
+            }
         }?;
 
+        let [cx, cy] = crop_xy.unwrap_or([0, 0]);
+        let [cw, ch] = crop_wh.unwrap_or([rect.width - cx, rect.height - cy]);
+        let crop = crop_xy.is_some() || crop_wh.is_some();
+
         let hdc = CreatedHdc::create_compatible_dc(hdc_screen.hdc)?;
-        let hbmp = Hbitmap::create_compatible_bitmap(hdc_screen.hdc, rect.width, rect.height)?;
+        let hbmp = match (crop, using) {
+            (true, Using::BitBlt) => Hbitmap::create_compatible_bitmap(hdc_screen.hdc, cw, ch),
+            (false, Using::BitBlt) | (_, Using::PrintWindow) => {
+                Hbitmap::create_compatible_bitmap(hdc_screen.hdc, rect.width, rect.height)
+            }
+        }?;
+
         if SelectObject(hdc.hdc, hbmp.hbitmap).is_invalid() {
             return Err(windows::core::Error::from_win32());
         }
@@ -75,32 +90,38 @@ pub fn capture_window_ex(
             Area::Full => PW_RENDERFULLCONTENT,
             Area::ClientOnly => PW_CLIENTONLY.0 | PW_RENDERFULLCONTENT,
         });
-        dbg!(&rect);
-        /*if PrintWindow(hwnd, hdc.hdc, flags) == false {
-            return Err(windows::core::Error::from_win32());
-        }*/
-        if BitBlt(hdc.hdc, 0, 0, rect.width, rect.height, hdc_screen.hdc, rect.left, rect.top, SRCCOPY) == false {
-            return Err(windows::core::Error::from_win32());
+
+        match using {
+            Using::BitBlt => {
+                if BitBlt(hdc.hdc, 0, 0, cw, ch, hdc_screen.hdc, cx, cy, SRCCOPY) == false {
+                    return Err(windows::core::Error::from_win32());
+                }
+            }
+            Using::PrintWindow => {
+                if PrintWindow(hwnd, hdc.hdc, flags) == false {
+                    return Err(windows::core::Error::from_win32());
+                }
+            }
         }
 
-        let (w, h, hdc, hbmp) = if crop_xy.is_some() || crop_wh.is_some() {
-            let [x, y] = crop_xy.unwrap_or([0, 0]);
-            let [w, h] = crop_wh.unwrap_or([rect.width - x, rect.height - y]);
-            let hdc2 = CreatedHdc::create_compatible_dc(hdc.hdc)?;
-            let hbmp2 = Hbitmap::create_compatible_bitmap(hdc.hdc, w, h)?;
-            let so = SelectObject(hdc2.hdc, hbmp2.hbitmap);
-            if so.is_invalid() {
-                return Err(windows::core::Error::from_win32());
+        let (w, h, hdc, hbmp) = match (crop, using) {
+            (true, Using::PrintWindow) => {
+                let hdc2 = CreatedHdc::create_compatible_dc(hdc.hdc)?;
+                let hbmp2 = Hbitmap::create_compatible_bitmap(hdc.hdc, cw, ch)?;
+                let so = SelectObject(hdc2.hdc, hbmp2.hbitmap);
+                if so.is_invalid() {
+                    return Err(windows::core::Error::from_win32());
+                }
+                if BitBlt(hdc2.hdc, 0, 0, cw, ch, hdc.hdc, cx, cy, SRCCOPY) == false {
+                    return Err(windows::core::Error::from_win32());
+                }
+                if SelectObject(hdc2.hdc, so).is_invalid() {
+                    return Err(windows::core::Error::from_win32());
+                }
+                (cw, ch, hdc2, hbmp2)
             }
-            if BitBlt(hdc2.hdc, 0, 0, w, h, hdc.hdc, x, y, SRCCOPY) == false {
-                return Err(windows::core::Error::from_win32());
-            }
-            if SelectObject(hdc2.hdc, so).is_invalid() {
-                return Err(windows::core::Error::from_win32());
-            }
-            (w, h, hdc2, hbmp2)
-        } else {
-            (rect.width, rect.height, hdc, hbmp)
+            (true, Using::BitBlt) => (cw, ch, hdc, hbmp),
+            (false, _) => (rect.width, rect.height, hdc, hbmp),
         };
 
         let bmih = BITMAPINFOHEADER {

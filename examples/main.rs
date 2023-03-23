@@ -22,14 +22,13 @@ fn main() {
         .unwrap()
         .hwnd;
 
-
     // More complex func
     let using = Using::BitBlt;
     // Screenshot client area of window
     let area = Area::Full;
     // Build-in crop, faster on large windows
-    let crop_xy = None;//Some([100, 100]);
-    let crop_wh = None; //Some([300 ,300 ]);
+    let crop_xy = None; //Some([100, 100]);
+    let crop_wh = Some([300, 300]);
     let buf = capture_window_ex(hwnd, using, area, crop_xy, crop_wh).unwrap();
 
     // convert to image and save

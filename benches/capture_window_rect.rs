@@ -12,8 +12,29 @@ fn using_image_crate(hwnd: isize) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     img
 }
 
-fn using_capture_window_ex(hwnd: isize) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
-    let buf = capture_window_ex(hwnd, Area::Full, Some([100, 100]), Some([200, 200])).unwrap();
+fn using_capture_window_ex_print_window(hwnd: isize) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    let buf = capture_window_ex(
+        hwnd,
+        Using::PrintWindow,
+        Area::Full,
+        Some([100, 100]),
+        Some([200, 200]),
+    )
+    .unwrap();
+    let img: ImageBuffer<Rgb<u8>, Vec<u8>> =
+        ImageBuffer::from_raw(buf.width, buf.height, buf.pixels).unwrap();
+    img
+}
+
+fn using_capture_window_ex_bitblt(hwnd: isize) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+    let buf = capture_window_ex(
+        hwnd,
+        Using::BitBlt,
+        Area::Full,
+        Some([100, 100]),
+        Some([200, 200]),
+    )
+    .unwrap();
     let img: ImageBuffer<Rgb<u8>, Vec<u8>> =
         ImageBuffer::from_raw(buf.width, buf.height, buf.pixels).unwrap();
     img
@@ -26,7 +47,7 @@ fn qshot(hwnd: isize) {
 }
 
 pub fn criterion_benchmark(c: &mut Criterion) {
-    let re = Regex::new(r"Firefox").unwrap();
+    let re = Regex::new(r"Sublime").unwrap();
     let hwnd = window_list()
         .unwrap()
         .iter()
@@ -40,8 +61,11 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     group.bench_function("using_image_crate", |b| {
         b.iter(|| using_image_crate(black_box(hwnd)))
     });
-    group.bench_function("using_capture_window_ex", |b| {
-        b.iter(|| using_capture_window_ex(black_box(hwnd)))
+    group.bench_function("using_capture_window_ex_print_window", |b| {
+        b.iter(|| using_capture_window_ex_print_window(black_box(hwnd)))
+    });
+    group.bench_function("using_capture_window_ex_bitblt", |b| {
+        b.iter(|| using_capture_window_ex_bitblt(black_box(hwnd)))
     });
     group.bench_function("qshot", |b| b.iter(|| qshot(black_box(hwnd))));
     group.finish();
