@@ -39,12 +39,10 @@ fn enumerate_params() {
     cutr(hwnd, Area::ClientOnly, None, None);
     cutr(hwnd, Area::Full, None, None);
 
-    cutr(hwnd, Area::ClientOnly, None, None);
     cutr(hwnd, Area::ClientOnly, Some([100, 100]), None);
     cutr(hwnd, Area::ClientOnly, None, Some([100, 100]));
     cutr(hwnd, Area::ClientOnly, Some([100, 100]), Some([100, 100]));
 
-    cutr(hwnd, Area::Full, None, None);
     cutr(hwnd, Area::Full, Some([100, 100]), None);
     cutr(hwnd, Area::Full, None, Some([100, 100]));
     cutr(hwnd, Area::Full, Some([100, 100]), Some([100, 100]));

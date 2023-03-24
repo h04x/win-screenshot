@@ -27,12 +27,12 @@ fn main() {
     let img = RgbaImage::from_raw(buf.width, buf.height, buf.pixels).unwrap();
     img.save("screenshot.jpg").unwrap();
 
-
     // Fine tuning
-    // Dramatically faster, often fails
+
+    // BitBlt dramatically faster, often fails
     // (e.g. firefox, steam, 3d accelerated windows)
     let using = Using::BitBlt;
-    // Much slower, much more reliable
+    // PrintWindow much slower, much more reliable
     let using = Using::PrintWindow;
 
     // Capture client area of window
