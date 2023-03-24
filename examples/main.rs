@@ -37,7 +37,7 @@ fn main() {
 
     // Capture client area of window
     let area = Area::ClientOnly;
-    // Capture whole window (not supporten with BitBlt)
+    // Capture whole window (not supported with BitBlt)
     let area = Area::Full;
 
     // Build-in crop, faster on large windows
