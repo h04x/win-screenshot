@@ -14,7 +14,7 @@ fn main() {
     let buf = capture_window(hwnd).unwrap();
 
     // If you don't know the exact name, try to find it
-    let re = Regex::new(r"Steam").unwrap();
+    let re = Regex::new(r"Firefox").unwrap();
     let hwnd = window_list()
         .unwrap()
         .iter()

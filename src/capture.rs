@@ -205,7 +205,7 @@ pub fn capture_display() -> Result<RgbBuf, WSError> {
         let bmih = BITMAPINFOHEADER {
             biSize: size_of::<BITMAPINFOHEADER>() as u32,
             biPlanes: 1,
-            biBitCount: 24,
+            biBitCount: 32,
             biWidth: width,
             biHeight: -height,
             biCompression: BI_RGB,
@@ -235,7 +235,7 @@ pub fn capture_display() -> Result<RgbBuf, WSError> {
             return Err(WSError::GetDIBitsError);
         }
 
-        buf.chunks_exact_mut(3).for_each(|c| c.swap(0, 2));
+        buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
 
         DeleteDC(hdc);
         DeleteObject(hbmp);
