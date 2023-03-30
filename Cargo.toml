@@ -9,7 +9,7 @@ repository = "https://github.com/h04x/win-screenshot"
 homepage = "https://github.com/h04x/win-screenshot"
 documentation = "https://docs.rs/win-screenshot"
 authors = ["h04x <distract.doctrine@gmail.com>"]
-keywords = ["screenshot", "display", "window", "windows", "screen", "capture"]
+keywords = ["screenshot", "window", "windows", "screen", "capture"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
