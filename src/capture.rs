@@ -6,6 +6,7 @@ use windows::Win32::Graphics::Gdi::{
     SRCCOPY,
 };
 use windows::Win32::Storage::Xps::{PrintWindow, PRINT_WINDOW_FLAGS, PW_CLIENTONLY};
+use windows::Win32::UI::HiDpi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE};
 use windows::Win32::UI::WindowsAndMessaging::{
     GetSystemMetrics, PW_RENDERFULLCONTENT, SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN,
     SM_XVIRTUALSCREEN, SM_YVIRTUALSCREEN,
@@ -161,6 +162,12 @@ pub fn capture_window_ex(
 
 pub fn capture_display() -> Result<RgbBuf, WSError> {
     unsafe {
+        // win 8.1 temporary DPI aware
+        #[allow(unused_must_use)] {
+            SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+        }
+        // for win 10
+        //SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
         let hdc_screen = GetDC(HWND::default());
         if hdc_screen.is_invalid() {
             return Err(WSError::GetDCIsNull);
