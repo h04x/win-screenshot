@@ -61,6 +61,10 @@ pub fn capture_window_ex(
     let hwnd = HWND(hwnd);
 
     unsafe {
+        #[allow(unused_must_use)] {
+            SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+        }
+        
         let hdc_screen = Hdc::get_dc(hwnd)?;
 
         // BitBlt support only ClientOnly
