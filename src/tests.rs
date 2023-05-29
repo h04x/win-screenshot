@@ -25,7 +25,7 @@ fn cutr(hwnd: isize, area: Area, crop_xy: Option<[i32; 2]>, crop_wh: Option<[i32
 
 #[test]
 fn enumerate_params() {
-    let re = Regex::new(r"Sublime").unwrap();
+    let re = Regex::new(r"cmd").unwrap();
     let hwnd = window_list()
         .unwrap()
         .iter()

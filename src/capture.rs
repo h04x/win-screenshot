@@ -135,7 +135,7 @@ pub fn capture_window_ex(
             biBitCount: 32,
             biWidth: w,
             biHeight: -h,
-            biCompression: BI_RGB,
+            biCompression: BI_RGB.0 as u32,
             ..Default::default()
         };
         let mut bmi = BITMAPINFO {
@@ -219,7 +219,7 @@ pub fn capture_display() -> Result<RgbBuf, WSError> {
             biBitCount: 32,
             biWidth: width,
             biHeight: -height,
-            biCompression: BI_RGB,
+            biCompression: BI_RGB.0 as u32,
             ..Default::default()
         };
 

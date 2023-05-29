@@ -1,6 +1,6 @@
 [package]
 name = "win-screenshot"
-version = "4.0.3"
+version = "4.0.4"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Take a screenshot of a specific window or entire screen on Windows platform"
@@ -18,7 +18,7 @@ targets = ["x86_64-pc-windows-msvc"]
 
 
 [dependencies.windows]
-version = "0.46"
+version = "0.48"
 features = [
     "Win32_UI_WindowsAndMessaging",
     "Win32_Foundation",
