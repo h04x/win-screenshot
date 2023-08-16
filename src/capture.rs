@@ -42,7 +42,7 @@ pub enum Using {
 
 #[derive(Debug)]
 pub struct RgbBuf {
-    pub pixels: Vec<u8>, 
+    pub pixels: Vec<u8>,
     pub width: u32,
     pub height: u32,
 }
@@ -61,10 +61,11 @@ pub fn capture_window_ex(
     let hwnd = HWND(hwnd);
 
     unsafe {
-        #[allow(unused_must_use)] {
+        #[allow(unused_must_use)]
+        {
             SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
         }
-        
+
         let hdc_screen = Hdc::get_dc(hwnd)?;
 
         // BitBlt support only ClientOnly
@@ -98,9 +99,7 @@ pub fn capture_window_ex(
 
         match using {
             Using::BitBlt => {
-                if BitBlt(hdc.hdc, 0, 0, cw, ch, hdc_screen.hdc, cx, cy, SRCCOPY) == false {
-                    return Err(windows::core::Error::from_win32());
-                }
+                BitBlt(hdc.hdc, 0, 0, cw, ch, hdc_screen.hdc, cx, cy, SRCCOPY)?;
             }
             Using::PrintWindow => {
                 if PrintWindow(hwnd, hdc.hdc, flags) == false {
@@ -117,9 +116,7 @@ pub fn capture_window_ex(
                 if so.is_invalid() {
                     return Err(windows::core::Error::from_win32());
                 }
-                if BitBlt(hdc2.hdc, 0, 0, cw, ch, hdc.hdc, cx, cy, SRCCOPY) == false {
-                    return Err(windows::core::Error::from_win32());
-                }
+                BitBlt(hdc2.hdc, 0, 0, cw, ch, hdc.hdc, cx, cy, SRCCOPY)?;
                 if SelectObject(hdc2.hdc, so).is_invalid() {
                     return Err(windows::core::Error::from_win32());
                 }
@@ -167,7 +164,8 @@ pub fn capture_window_ex(
 pub fn capture_display() -> Result<RgbBuf, WSError> {
     unsafe {
         // win 8.1 temporary DPI aware
-        #[allow(unused_must_use)] {
+        #[allow(unused_must_use)]
+        {
             SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
         }
         // for win 10

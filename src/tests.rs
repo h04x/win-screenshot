@@ -1,26 +1,30 @@
 use core::fmt;
 
+use crate::prelude::*;
 use image::RgbaImage;
 use regex::Regex;
-use crate::prelude::*;
 
 impl fmt::Display for Area {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Area::Full =>  write!(f, "f"),
-            Area::ClientOnly => write!(f, "co")
+            Area::Full => write!(f, "f"),
+            Area::ClientOnly => write!(f, "co"),
         }
     }
 }
 
-
-
 fn cutr(hwnd: isize, area: Area, crop_xy: Option<[i32; 2]>, crop_wh: Option<[i32; 2]>) {
     let name = format!("{}-{:?}-{:?}", area, crop_xy, crop_wh);
     let b = capture_window_ex(hwnd, Using::PrintWindow, area, crop_xy, crop_wh).unwrap();
-    RgbaImage::from_raw(b.width, b.height, b.pixels).unwrap().save(format!("tests_output/{}-pw.jpg", name)).unwrap();
+    RgbaImage::from_raw(b.width, b.height, b.pixels)
+        .unwrap()
+        .save(format!("tests_output/{}-pw.jpg", name))
+        .unwrap();
     let b = capture_window_ex(hwnd, Using::BitBlt, area, crop_xy, crop_wh).unwrap();
-    RgbaImage::from_raw(b.width, b.height, b.pixels).unwrap().save(format!("tests_output/{}-bb.jpg", name)).unwrap();
+    RgbaImage::from_raw(b.width, b.height, b.pixels)
+        .unwrap()
+        .save(format!("tests_output/{}-bb.jpg", name))
+        .unwrap();
 }
 
 #[test]

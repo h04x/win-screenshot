@@ -78,13 +78,11 @@ pub enum WLError {
 pub fn window_list() -> Result<Vec<HwndName>, WLError> {
     let mut hwnd_name = Vec::new();
     unsafe {
-        let ew = EnumWindows(
+        EnumWindows(
             Some(wl_callback),
             LPARAM(&mut hwnd_name as *mut Vec<HwndName> as isize),
-        );
-        if ew == false {
-            return Err(WLError::EnumWindowsError);
-        }
+        )
+        .map_err(|_| WLError::EnumWindowsError)?
     }
     Ok(hwnd_name)
 }

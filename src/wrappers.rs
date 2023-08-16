@@ -3,8 +3,8 @@ use windows::{
     Win32::{
         Foundation::{HWND, RECT},
         Graphics::Gdi::{
-            CreateCompatibleBitmap, CreateCompatibleDC, CreatedHDC, DeleteDC, DeleteObject, GetDC,
-            ReleaseDC, HBITMAP, HDC,
+            CreateCompatibleBitmap, CreateCompatibleDC, DeleteDC, DeleteObject, GetDC, ReleaseDC,
+            HBITMAP, HDC,
         },
         UI::WindowsAndMessaging::{GetClientRect, GetWindowRect},
     },
@@ -61,6 +61,19 @@ pub(crate) struct Rect {
     pub(crate) height: i32,
 }
 
+impl From<RECT> for Rect {
+    fn from(rect: RECT) -> Self {
+        Rect {
+            left: rect.left,
+            top: rect.top,
+            right: rect.right,
+            bottom: rect.bottom,
+            width: rect.right - rect.left,
+            height: rect.bottom - rect.top,
+        }
+    }
+}
+
 impl Rect {
     pub(crate) fn get_window_rect<P0>(hwnd: P0) -> Result<Rect, Error>
     where
@@ -68,16 +81,9 @@ impl Rect {
     {
         let mut rect = RECT::default();
         unsafe {
-            match GetWindowRect(hwnd.into(), &mut rect).as_bool() {
-                true => Ok(Rect {
-                    left: rect.left,
-                    top: rect.top,
-                    right: rect.right,
-                    bottom: rect.bottom,
-                    width: rect.right - rect.left,
-                    height: rect.bottom - rect.top,
-                }),
-                false => Err(Error::from_win32()),
+            match GetWindowRect(hwnd.into(), &mut rect) {
+                Ok(_) => Ok(Rect::from(rect)),
+                Err(e) => Err(e),
             }
         }
     }
@@ -87,23 +93,16 @@ impl Rect {
     {
         let mut rect = RECT::default();
         unsafe {
-            match GetClientRect(hwnd.into(), &mut rect).as_bool() {
-                true => Ok(Rect {
-                    left: rect.left,
-                    top: rect.top,
-                    right: rect.right,
-                    bottom: rect.bottom,
-                    width: rect.right - rect.left,
-                    height: rect.bottom - rect.top,
-                }),
-                false => Err(Error::from_win32()),
+            match GetClientRect(hwnd.into(), &mut rect) {
+                Ok(_) => Ok(Rect::from(rect)),
+                Err(e) => Err(e),
             }
         }
     }
 }
 
 pub(crate) struct CreatedHdc {
-    pub(crate) hdc: CreatedHDC,
+    pub(crate) hdc: HDC,
 }
 
 impl CreatedHdc {

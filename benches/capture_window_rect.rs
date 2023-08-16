@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use image::{imageops::crop_imm, ImageBuffer, Rgba, Rgb};
+use image::{imageops::crop_imm, ImageBuffer, Rgb, Rgba};
 use qshot::CaptureManager;
 use regex::Regex;
 use win_screenshot::prelude::*;
