@@ -150,7 +150,7 @@ pub fn capture_window_ex(
             DIB_RGB_COLORS,
         );
         if gdb == 0 || gdb == ERROR_INVALID_PARAMETER.0 as i32 {
-            return Err(windows::core::Error::new(E_FAIL, "GetDIBits error".into()));
+            return Err(windows::core::Error::new(E_FAIL, "GetDIBits error"));
         }
         buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
         Ok(RgbBuf {
