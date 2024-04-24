@@ -1,7 +1,7 @@
 use core::fmt;
 
 use crate::prelude::*;
-use image::RgbaImage;
+use image::{DynamicImage, RgbaImage};
 use regex::Regex;
 
 impl fmt::Display for Area {
@@ -16,20 +16,22 @@ impl fmt::Display for Area {
 fn cutr(hwnd: isize, area: Area, crop_xy: Option<[i32; 2]>, crop_wh: Option<[i32; 2]>) {
     let name = format!("{}-{:?}-{:?}", area, crop_xy, crop_wh);
     let b = capture_window_ex(hwnd, Using::PrintWindow, area, crop_xy, crop_wh).unwrap();
-    RgbaImage::from_raw(b.width, b.height, b.pixels)
-        .unwrap()
-        .save(format!("tests_output/{}-pw.bmp", name))
+    DynamicImage::ImageRgba8(RgbaImage::from_raw(b.width, b.height, b.pixels)
+        .unwrap())
+        .to_rgb8()
+        .save(format!("tests_output/{}-pw.jpg", name))
         .unwrap();
     let b = capture_window_ex(hwnd, Using::BitBlt, area, crop_xy, crop_wh).unwrap();
-    RgbaImage::from_raw(b.width, b.height, b.pixels)
-        .unwrap()
-        .save(format!("tests_output/{}-bb.bmp", name))
+    DynamicImage::ImageRgba8(RgbaImage::from_raw(b.width, b.height, b.pixels)
+        .unwrap())
+        .to_rgb8()
+        .save(format!("tests_output/{}-bb.jpg", name))
         .unwrap();
 }
 
 #[test]
 fn enumerate_params() {
-    let re = Regex::new(r"Steam").unwrap();
+    let re = Regex::new(r"cmd").unwrap();
     let hwnd = window_list()
         .unwrap()
         .iter()

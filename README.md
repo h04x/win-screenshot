@@ -10,7 +10,7 @@ If you call `capture_window()` and got `0x80070578 "invalid window handle"` make
 
 ## Examples
 ```rust
-use image::RgbaImage;
+use image::{DynamicImage, RgbaImage};
 use regex::Regex;
 use win_screenshot::prelude::*;
 
@@ -36,8 +36,9 @@ fn main() {
     let buf = capture_window(hwnd).unwrap();
 
     // convert to image and save
-    let img = RgbaImage::from_raw(buf.width, buf.height, buf.pixels).unwrap();
-    img.save("screenshot.bmp").unwrap();
+    let img = DynamicImage::ImageRgba8(
+        RgbaImage::from_raw(buf.width, buf.height, buf.pixels).unwrap());
+    img.to_rgb8().save("screenshot.jpg").unwrap();
 
     // Fine tuning
 
