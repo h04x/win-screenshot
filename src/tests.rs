@@ -18,18 +18,18 @@ fn cutr(hwnd: isize, area: Area, crop_xy: Option<[i32; 2]>, crop_wh: Option<[i32
     let b = capture_window_ex(hwnd, Using::PrintWindow, area, crop_xy, crop_wh).unwrap();
     RgbaImage::from_raw(b.width, b.height, b.pixels)
         .unwrap()
-        .save(format!("tests_output/{}-pw.jpg", name))
+        .save(format!("tests_output/{}-pw.bmp", name))
         .unwrap();
     let b = capture_window_ex(hwnd, Using::BitBlt, area, crop_xy, crop_wh).unwrap();
     RgbaImage::from_raw(b.width, b.height, b.pixels)
         .unwrap()
-        .save(format!("tests_output/{}-bb.jpg", name))
+        .save(format!("tests_output/{}-bb.bmp", name))
         .unwrap();
 }
 
 #[test]
 fn enumerate_params() {
-    let re = Regex::new(r"cmd").unwrap();
+    let re = Regex::new(r"Steam").unwrap();
     let hwnd = window_list()
         .unwrap()
         .iter()

@@ -10,7 +10,7 @@ fn main() {
     let buf = capture_window(11996706).unwrap();
 
     // Capture window if you know the exact name
-    let hwnd = find_window("Notepad").unwrap();
+    let hwnd = find_window("Steam").unwrap();
     let buf = capture_window(hwnd).unwrap();
 
     // If you don't know the exact name, try to find it
@@ -25,7 +25,7 @@ fn main() {
 
     // convert to image and save
     let img = RgbaImage::from_raw(buf.width, buf.height, buf.pixels).unwrap();
-    img.save("screenshot.jpg").unwrap();
+    img.save("screenshot.bmp").unwrap();
 
     // Fine tuning
 

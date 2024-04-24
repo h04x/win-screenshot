@@ -37,7 +37,7 @@ fn main() {
 
     // convert to image and save
     let img = RgbaImage::from_raw(buf.width, buf.height, buf.pixels).unwrap();
-    img.save("screenshot.jpg").unwrap();
+    img.save("screenshot.bmp").unwrap();
 
     // Fine tuning
 

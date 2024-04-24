@@ -188,15 +188,15 @@ pub fn capture_display() -> Result<RgbBuf, WSError> {
 
         let hbmp = CreateCompatibleBitmap(hdc_screen, width, height);
         if hbmp.is_invalid() {
-            DeleteDC(hdc);
+            let _ = DeleteDC(hdc);
             ReleaseDC(HWND::default(), hdc_screen);
             return Err(WSError::CreateCompatibleBitmapIsNull);
         }
 
         let so = SelectObject(hdc, hbmp);
         if so.is_invalid() {
-            DeleteDC(hdc);
-            DeleteObject(hbmp);
+            let _ = DeleteDC(hdc);
+            let _ = DeleteObject(hbmp);
             ReleaseDC(HWND::default(), hdc_screen);
             return Err(WSError::SelectObjectError);
         }
@@ -205,8 +205,8 @@ pub fn capture_display() -> Result<RgbBuf, WSError> {
             hdc, 0, 0, width, height, hdc_screen, x, y, width, height, SRCCOPY,
         );
         if sb == false {
-            DeleteDC(hdc);
-            DeleteObject(hbmp);
+            let _ = DeleteDC(hdc);
+            let _ = DeleteObject(hbmp);
             ReleaseDC(HWND::default(), hdc_screen);
             return Err(WSError::StretchBltIsZero);
         }
@@ -238,16 +238,16 @@ pub fn capture_display() -> Result<RgbBuf, WSError> {
             DIB_RGB_COLORS,
         );
         if gdb == 0 || gdb == ERROR_INVALID_PARAMETER.0 as i32 {
-            DeleteDC(hdc);
-            DeleteObject(hbmp);
+            let _ = DeleteDC(hdc);
+            let _ = DeleteObject(hbmp);
             ReleaseDC(HWND::default(), hdc_screen);
             return Err(WSError::GetDIBitsError);
         }
 
         buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
 
-        DeleteDC(hdc);
-        DeleteObject(hbmp);
+        let _ = DeleteDC(hdc);
+        let _ = DeleteObject(hbmp);
         ReleaseDC(HWND::default(), hdc_screen);
 
         Ok(RgbBuf {

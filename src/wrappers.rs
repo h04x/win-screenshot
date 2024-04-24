@@ -1,5 +1,5 @@
 use windows::{
-    core::{Error, IntoParam},
+    core::{Error},
     Win32::{
         Foundation::{HWND, RECT},
         Graphics::Gdi::{
@@ -106,9 +106,7 @@ pub(crate) struct CreatedHdc {
 }
 
 impl CreatedHdc {
-    pub(crate) fn create_compatible_dc<P0>(hdc: P0) -> Result<CreatedHdc, Error>
-    where
-        P0: IntoParam<HDC>,
+    pub(crate) fn create_compatible_dc(hdc: HDC) -> Result<CreatedHdc, Error>
     {
         unsafe {
             match CreateCompatibleDC(hdc) {
@@ -134,7 +132,7 @@ impl From<CreatedHdc> for HDC {
 impl Drop for CreatedHdc {
     fn drop(&mut self) {
         unsafe {
-            DeleteDC(self.hdc);
+            let _ = DeleteDC(self.hdc);
         }
     }
 }
@@ -144,9 +142,7 @@ pub(crate) struct Hbitmap {
 }
 
 impl Hbitmap {
-    pub(crate) fn create_compatible_bitmap<P0>(hdc: P0, w: i32, h: i32) -> Result<Hbitmap, Error>
-    where
-        P0: IntoParam<HDC>,
+    pub(crate) fn create_compatible_bitmap(hdc: HDC, w: i32, h: i32) -> Result<Hbitmap, Error>
     {
         unsafe {
             match CreateCompatibleBitmap(hdc, w, h) {
@@ -160,7 +156,7 @@ impl Hbitmap {
 impl Drop for Hbitmap {
     fn drop(&mut self) {
         unsafe {
-            DeleteObject(self.hbitmap);
+            let _ = DeleteObject(self.hbitmap);
         }
     }
 }
