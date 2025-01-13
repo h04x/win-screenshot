@@ -21,7 +21,7 @@ impl Hdc {
         P0: Into<HWND>,
     {
         unsafe {
-            match GetDC(hwnd.into()) {
+            match GetDC(Some(hwnd.into())) {
                 e if e.is_invalid() => Err(Error::from_win32()),
                 hdc => Ok(Hdc { hdc }),
             }
@@ -32,7 +32,7 @@ impl Hdc {
 impl Drop for Hdc {
     fn drop(&mut self) {
         unsafe {
-            ReleaseDC(HWND::default(), self.hdc);
+            ReleaseDC(None, self.hdc);
         }
     }
 }
@@ -109,7 +109,7 @@ impl CreatedHdc {
     pub(crate) fn create_compatible_dc(hdc: HDC) -> Result<CreatedHdc, Error>
     {
         unsafe {
-            match CreateCompatibleDC(hdc) {
+            match CreateCompatibleDC(Some(hdc)) {
                 e if e.is_invalid() => Err(Error::from_win32()),
                 hdc => Ok(CreatedHdc { hdc }),
             }
@@ -156,7 +156,7 @@ impl Hbitmap {
 impl Drop for Hbitmap {
     fn drop(&mut self) {
         unsafe {
-            let _ = DeleteObject(self.hbitmap);
+            let _ = DeleteObject(self.hbitmap.into());
         }
     }
 }

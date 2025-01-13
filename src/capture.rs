@@ -1,3 +1,4 @@
+use std::ffi::c_void;
 use std::mem::size_of;
 use windows::Win32::Foundation::{ERROR_INVALID_PARAMETER, E_FAIL, HWND};
 use windows::Win32::Graphics::Gdi::{
@@ -58,7 +59,7 @@ pub fn capture_window_ex(
     crop_xy: Option<[i32; 2]>,
     crop_wh: Option<[i32; 2]>,
 ) -> Result<RgbBuf, windows::core::Error> {
-    let hwnd = HWND(hwnd);
+    let hwnd = HWND(hwnd as *mut c_void);
 
     unsafe {
         #[allow(unused_must_use)]
@@ -88,7 +89,7 @@ pub fn capture_window_ex(
             }
         }?;
 
-        if SelectObject(hdc.hdc, hbmp.hbitmap).is_invalid() {
+        if SelectObject(hdc.hdc, hbmp.hbitmap.into()).is_invalid() {
             return Err(windows::core::Error::from_win32());
         }
 
@@ -99,7 +100,7 @@ pub fn capture_window_ex(
 
         match using {
             Using::BitBlt => {
-                BitBlt(hdc.hdc, 0, 0, cw, ch, hdc_screen.hdc, cx, cy, SRCCOPY)?;
+                BitBlt(hdc.hdc, 0, 0, cw, ch, Some(hdc_screen.hdc), cx, cy, SRCCOPY)?;
             }
             Using::PrintWindow => {
                 if PrintWindow(hwnd, hdc.hdc, flags) == false {
@@ -112,11 +113,11 @@ pub fn capture_window_ex(
             (true, Using::PrintWindow) => {
                 let hdc2 = CreatedHdc::create_compatible_dc(hdc.hdc)?;
                 let hbmp2 = Hbitmap::create_compatible_bitmap(hdc.hdc, cw, ch)?;
-                let so = SelectObject(hdc2.hdc, hbmp2.hbitmap);
+                let so = SelectObject(hdc2.hdc, hbmp2.hbitmap.into());
                 if so.is_invalid() {
                     return Err(windows::core::Error::from_win32());
                 }
-                BitBlt(hdc2.hdc, 0, 0, cw, ch, hdc.hdc, cx, cy, SRCCOPY)?;
+                BitBlt(hdc2.hdc, 0, 0, cw, ch, Some(hdc.hdc), cx, cy, SRCCOPY)?;
                 if SelectObject(hdc2.hdc, so).is_invalid() {
                     return Err(windows::core::Error::from_win32());
                 }
@@ -170,14 +171,14 @@ pub fn capture_display() -> Result<RgbBuf, WSError> {
         }
         // for win 10
         //SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-        let hdc_screen = GetDC(HWND::default());
+        let hdc_screen = GetDC(None);
         if hdc_screen.is_invalid() {
             return Err(WSError::GetDCIsNull);
         }
 
-        let hdc = CreateCompatibleDC(hdc_screen);
+        let hdc = CreateCompatibleDC(Some(hdc_screen));
         if hdc.is_invalid() {
-            ReleaseDC(HWND::default(), hdc_screen);
+            ReleaseDC(None, hdc_screen);
             return Err(WSError::CreateCompatibleDCIsNull);
         }
 
@@ -189,25 +190,25 @@ pub fn capture_display() -> Result<RgbBuf, WSError> {
         let hbmp = CreateCompatibleBitmap(hdc_screen, width, height);
         if hbmp.is_invalid() {
             let _ = DeleteDC(hdc);
-            ReleaseDC(HWND::default(), hdc_screen);
+            ReleaseDC(None, hdc_screen);
             return Err(WSError::CreateCompatibleBitmapIsNull);
         }
 
-        let so = SelectObject(hdc, hbmp);
+        let so = SelectObject(hdc, hbmp.into());
         if so.is_invalid() {
             let _ = DeleteDC(hdc);
-            let _ = DeleteObject(hbmp);
-            ReleaseDC(HWND::default(), hdc_screen);
+            let _ = DeleteObject(hbmp.into());
+            ReleaseDC(None, hdc_screen);
             return Err(WSError::SelectObjectError);
         }
 
         let sb = StretchBlt(
-            hdc, 0, 0, width, height, hdc_screen, x, y, width, height, SRCCOPY,
+            hdc, 0, 0, width, height, Some(hdc_screen), x, y, width, height, SRCCOPY,
         );
         if sb == false {
             let _ = DeleteDC(hdc);
-            let _ = DeleteObject(hbmp);
-            ReleaseDC(HWND::default(), hdc_screen);
+            let _ = DeleteObject(hbmp.into());
+            ReleaseDC(None, hdc_screen);
             return Err(WSError::StretchBltIsZero);
         }
 
@@ -239,16 +240,16 @@ pub fn capture_display() -> Result<RgbBuf, WSError> {
         );
         if gdb == 0 || gdb == ERROR_INVALID_PARAMETER.0 as i32 {
             let _ = DeleteDC(hdc);
-            let _ = DeleteObject(hbmp);
-            ReleaseDC(HWND::default(), hdc_screen);
+            let _ = DeleteObject(hbmp.into());
+            ReleaseDC(None, hdc_screen);
             return Err(WSError::GetDIBitsError);
         }
 
         buf.chunks_exact_mut(4).for_each(|c| c.swap(0, 2));
 
         let _ = DeleteDC(hdc);
-        let _ = DeleteObject(hbmp);
-        ReleaseDC(HWND::default(), hdc_screen);
+        let _ = DeleteObject(hbmp.into());
+        ReleaseDC(None, hdc_screen);
 
         Ok(RgbBuf {
             pixels: buf,

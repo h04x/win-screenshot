@@ -30,8 +30,8 @@ pub fn find_window(window_name: &str) -> Result<isize, FWError> {
             ),
         );
         match w {
-            HWND(0) => Err(FWError::NotFoundOrFault),
-            HWND(p) => Ok(p),
+            Err(_) => Err(FWError::NotFoundOrFault),
+            Ok(HWND(p)) => Ok(p as isize),
         }
     }
 }
@@ -63,7 +63,7 @@ unsafe extern "system" fn wl_callback(hwnd: HWND, lparam: LPARAM) -> BOOL {
     let name = String::from_utf16_lossy(name_buf);
 
     (*vec).push(HwndName {
-        hwnd: hwnd.0,
+        hwnd: hwnd.0 as isize,
         window_name: name,
     });
 
