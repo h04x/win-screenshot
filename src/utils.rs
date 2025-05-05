@@ -1,7 +1,8 @@
 use std::ffi::OsString;
 use std::os::windows::ffi::OsStrExt;
 use windows::core::PCWSTR;
-use windows::Win32::Foundation::{BOOL, HWND, LPARAM};
+use windows::Win32::Foundation::{HWND, LPARAM};
+use windows::core::BOOL;
 use windows::Win32::UI::WindowsAndMessaging::{
     EnumWindows, FindWindowW, GetWindowTextLengthW, GetWindowTextW, IsWindowVisible,
 };
