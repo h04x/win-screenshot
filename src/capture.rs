@@ -90,7 +90,7 @@ pub fn capture_window_ex(
         }?;
 
         if SelectObject(hdc.hdc, hbmp.hbitmap.into()).is_invalid() {
-            return Err(windows::core::Error::from_win32());
+            return Err(windows::core::Error::from_thread());
         }
 
         let flags = PRINT_WINDOW_FLAGS(match area {
@@ -104,7 +104,7 @@ pub fn capture_window_ex(
             }
             Using::PrintWindow => {
                 if PrintWindow(hwnd, hdc.hdc, flags) == false {
-                    return Err(windows::core::Error::from_win32());
+                    return Err(windows::core::Error::from_thread());
                 }
             }
         }
@@ -115,11 +115,11 @@ pub fn capture_window_ex(
                 let hbmp2 = Hbitmap::create_compatible_bitmap(hdc.hdc, cw, ch)?;
                 let so = SelectObject(hdc2.hdc, hbmp2.hbitmap.into());
                 if so.is_invalid() {
-                    return Err(windows::core::Error::from_win32());
+                    return Err(windows::core::Error::from_thread());
                 }
                 BitBlt(hdc2.hdc, 0, 0, cw, ch, Some(hdc.hdc), cx, cy, SRCCOPY)?;
                 if SelectObject(hdc2.hdc, so).is_invalid() {
-                    return Err(windows::core::Error::from_win32());
+                    return Err(windows::core::Error::from_thread());
                 }
                 (cw, ch, hdc2, hbmp2)
             }

@@ -18,7 +18,7 @@ targets = ["x86_64-pc-windows-msvc"]
 
 
 [dependencies.windows]
-version = "0.61"
+version = "0.62.2"
 features = [
     "Win32_UI_WindowsAndMessaging",
     "Win32_Foundation",

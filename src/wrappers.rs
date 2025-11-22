@@ -22,7 +22,7 @@ impl Hdc {
     {
         unsafe {
             match GetDC(Some(hwnd.into())) {
-                e if e.is_invalid() => Err(Error::from_win32()),
+                e if e.is_invalid() => Err(Error::from_thread()),
                 hdc => Ok(Hdc { hdc }),
             }
         }
@@ -110,7 +110,7 @@ impl CreatedHdc {
     {
         unsafe {
             match CreateCompatibleDC(Some(hdc)) {
-                e if e.is_invalid() => Err(Error::from_win32()),
+                e if e.is_invalid() => Err(Error::from_thread()),
                 hdc => Ok(CreatedHdc { hdc }),
             }
         }
@@ -146,7 +146,7 @@ impl Hbitmap {
     {
         unsafe {
             match CreateCompatibleBitmap(hdc, w, h) {
-                e if e.is_invalid() => Err(Error::from_win32()),
+                e if e.is_invalid() => Err(Error::from_thread()),
                 hbitmap => Ok(Hbitmap { hbitmap }),
             }
         }
